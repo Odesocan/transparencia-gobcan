@@ -224,6 +224,56 @@ categorias_excluidas:
     motivo: "Avisos y prealertas meteorológicas: no son actividad ejecutiva."
 
 # ---------------------------------------------------------------------------
+# Correspondencias con el Parlamento de Canarias.
+#
+# La comisión dictaminante es la vía limpia para el área: es un dato publicado
+# por la Cámara, no una inferencia nuestra sobre el texto. Las 13 comisiones
+# permanentes de la XI legislatura mapean casi uno a uno con las consejerías.
+#
+# Solo la traen las iniciativas que pasan por comisión (proyectos y
+# proposiciones de ley, PNL en comisión). Las proposiciones no de ley en pleno,
+# que son la mayoría, no la tienen: para esas el área se deriva del extracto y
+# se marca como inferida.
+# ---------------------------------------------------------------------------
+correspondencias_parcan_comisiones:
+  "Sanidad": sanidad
+  "Educación, Formación Profesional y Deportes": educacion
+  "Universidades, Ciencia e Innovación y Cultura": universidades
+  "Obras Públicas, Transportes y Vivienda": obras_publicas
+  "Derechos Sociales, Igualdad, Diversidad y Juventud": bienestar_social
+  "Discapacidad": bienestar_social
+  "Gobernación, Desarrollo Autonómico y Justicia": presidencia_aapp
+  "Transición Ecológica": transicion_ecologica
+  "Agricultura, Ganadería y Pesca": agricultura
+  "Turismo y Empleo": turismo_empleo
+  "Presupuestos y Hacienda": hacienda
+  "Economía, Industria y Comercio": economia
+  "Política Territorial": politica_territorial
+  # Comisiones no sectoriales: no designan un área de gobierno, así que la
+  # entrada se resuelve por el extracto como si no tuviera comisión.
+  "Reglamento": null
+  "Estatuto de los miembros de la Cámara y de Peticiones": null
+  "Comisión General de Cabildos Insulares": null
+  "Asuntos Europeos y Acción Exterior": null
+  "De Control de Radiotelevisión Canaria": null
+  "De Relaciones con la Audiencia de Cuentas de Canarias": null
+
+# Materias de config/alertas.yaml -> área de gobierno. Se usa como último
+# recurso cuando la iniciativa no pasa por comisión, y el resultado se marca
+# siempre como inferido para no confundirlo con un dato de la fuente.
+correspondencias_materia_area:
+  sanidad: sanidad
+  educacion: educacion
+  vivienda: obras_publicas
+  servicios_sociales: bienestar_social
+  dependencia: bienestar_social
+  violencia_genero: bienestar_social
+  migraciones: bienestar_social
+  empleo: turismo_empleo
+  territorio_aguas: politica_territorial
+  emergencia_social: bienestar_social
+
+# ---------------------------------------------------------------------------
 # Grupos parlamentarios de la XI legislatura. Nomenclatura tomada de
 # cargos_publicos.cp_parlamento_diputados.grupo_parlamentario, que coincide
 # literalmente con la que usa Parcan en la ficha de trámites de cada iniciativa.

@@ -23,7 +23,7 @@ TAMANO_LOTE = 500
 
 _COLUMNAS = [
     "hash_dedup", "id_fuente", "fuente", "fecha_ext", "fecha_real", "fecha_modificacion",
-    "titulo", "entrada", "entrada_origen", "url", "area", "areas",
+    "titulo", "entrada", "entrada_origen", "url", "area", "area_origen", "areas",
     "territorio", "territorio_origen", "grupo_parlamentario", "tipo_iniciativa", "situacion",
     "es_alerta", "motivo_alerta", "materias", "actos", "notificada_en",
 ]
@@ -59,6 +59,7 @@ def _fila(entrada: Entrada) -> tuple[Any, ...]:
     d["url"] = str(entrada.url)
     d["fuente"] = entrada.fuente.value
     d["entrada_origen"] = entrada.entrada_origen.value
+    d["area_origen"] = entrada.area_origen.value
     d["territorio_origen"] = entrada.territorio_origen.value
     return tuple(d[c] for c in _COLUMNAS)
 

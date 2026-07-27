@@ -30,6 +30,14 @@ import unicodedata
 from ..config import cargar
 from ..modelos import Entrada
 
+# Tipos de iniciativa que son en sí mismos una decisión política, sin que el
+# extracto tenga que nombrarla. Se corresponden con el anillo de decisiones de
+# config/fuentes.yaml; las preguntas y comparecencias quedan fuera porque son
+# control ordinario, no decisión.
+TIPOS_QUE_SON_DECISION = frozenset(
+    {"PL", "PPL", "PPLP", "PPLA", "PPLC", "PPLE", "DL", "DLG", "PNLP", "PNLC", "M", "CG"}
+)
+
 
 def normalizar(texto: str) -> str:
     """Pasa a minúsculas y quita tildes, para que el cotejo no dependa de la acentuación."""
@@ -70,6 +78,15 @@ def clasificar(entrada: Entrada) -> Entrada:
 
     actos = [k for k, rx in p["actos"].items() if rx.search(texto)]
     materias = [k for k, rx in p["materias"].items() if rx.search(texto)]
+
+    # En Gobcan el acto de decisión hay que buscarlo en el texto de la nota. En
+    # el Parlamento no hace falta: el tipo de iniciativa ya lo dice. Un proyecto
+    # de ley, un decreto ley o una proposición no de ley SON la decisión, y su
+    # extracto no tiene por qué repetir el verbo. Sin esto, la ley de
+    # Presupuestos Generales de Canarias no disparaba alerta.
+    if entrada.tipo_iniciativa and entrada.tipo_iniciativa in TIPOS_QUE_SON_DECISION:
+        if "iniciativa_parlamentaria" not in actos:
+            actos.append("iniciativa_parlamentaria")
     institucion = bool(p["cabildos"].search(texto) or p["ayuntamientos"].search(texto))
 
     if p["propias"].search(texto):

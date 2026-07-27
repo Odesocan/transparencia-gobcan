@@ -45,6 +45,20 @@ class OrigenTerritorio(StrEnum):
     POR_DEFECTO = "defecto"      # sin mención concreta: se asume ámbito canario
 
 
+class OrigenArea(StrEnum):
+    """Procedencia del campo `area`, por el mismo motivo que en el territorio.
+
+    En Gobcan siempre es publicado: el área sale de la categoría que asigna el
+    portal. En Parcan solo lo es cuando la iniciativa pasa por comisión, porque
+    entonces hay comisión dictaminante; las proposiciones no de ley en pleno no
+    la tienen y su área se deduce del extracto.
+    """
+
+    PUBLICADO = "publicado"      # categoría de Gobcan o comisión dictaminante
+    INFERIDO_TEXTO = "inferido"  # deducido del extracto
+    POR_DEFECTO = "defecto"      # sin señal: queda en el área residual
+
+
 class OrigenEntradilla(StrEnum):
     """Nivel de la cascada de extracción del que salió la entradilla.
 
@@ -74,13 +88,14 @@ class Entrada(BaseModel):
 
     # --- Contenido ---
     titulo: str = Field(min_length=5)
-    entrada: str = Field(min_length=20, description="Entradilla de 2-3 líneas")
+    entrada: str = Field(min_length=10, description="Entradilla de 2-3 líneas o extracto de la iniciativa")
     entrada_origen: OrigenEntradilla
     url: HttpUrl
 
     # --- Clasificación ---
     area: str = Field(description="Clave del vocabulario cerrado de config/areas.yaml")
     areas: list[str] = Field(default_factory=list, description="Subáreas o áreas secundarias")
+    area_origen: OrigenArea = OrigenArea.PUBLICADO
     territorio: str = Field(default="Canarias")
     territorio_origen: OrigenTerritorio = OrigenTerritorio.POR_DEFECTO
 

@@ -62,9 +62,13 @@ def extraer(
     """Ejecuta el pipeline completo: extracción, transformación, validación y carga."""
     _configurar_registro()
 
-    if fuente != "gobcan":
-        consola.print(f"[yellow]La fuente {fuente!r} todavía no está implementada.[/yellow]")
+    if fuente not in ("gobcan", "parcan"):
+        consola.print(f"[yellow]La fuente {fuente!r} no existe. Usa gobcan o parcan.[/yellow]")
         raise typer.Exit(1)
+
+    if fuente == "parcan":
+        _extraer_parcan(modo, simular)
+        return
 
     from .carga.logs import abrir_registro, cerrar_registro
     from .extraccion.gobcan_api import descargar_categorias, descargar_entradas
@@ -125,6 +129,100 @@ def extraer(
     finally:
         if cerrojo is not None:
             cerrojo.close()
+
+
+def _extraer_parcan(modo: str, simular: bool) -> None:
+    """Recorre el buscador de iniciativas del Parlamento y carga el resultado.
+
+    A diferencia de Gobcan no hay modo incremental útil: el buscador no filtra
+    por fecha de modificación, así que se recorre el anillo entero y el UPSERT
+    se encarga de que reprocesar no duplique. Son unas 679 iniciativas con
+    crawl-delay de 3 segundos, es decir alrededor de media hora.
+    """
+    from pydantic import ValidationError
+
+    from .alertas.clasificador import clasificar
+    from .carga.logs import abrir_registro, cerrar_registro
+    from .extraccion.parcan_iniciativas import recorrer
+    from .modelos import MotivoDescarte
+    from .transformacion.iniciativas import construir_entrada
+
+    anillo = "control" if modo == "control" else "decisiones"
+    cerrojo = _tomar_cerrojo(simular)
+    registro = abrir_registro(Fuente.PARLAMENTO, "historico")
+    consola.print(
+        f"[bold]Extrayendo[/bold] de parcan · anillo {anillo}"
+        + (" · [yellow]simulación[/yellow]" if simular else "")
+    )
+    consola.print("  [dim]crawl-delay de 3 s por petición: esto va a tardar[/dim]")
+
+    entradas: list = []
+    try:
+        for cruda in recorrer(anillo=anillo):
+            registro.filas_leidas += 1
+            try:
+                entradas.append(clasificar(construir_entrada(cruda)))
+            except ValidationError as e:
+                registro.anotar_descarte(
+                    MotivoDescarte.ERROR_VALIDACION,
+                    f"{cruda.get('codigo')}: {e.errors()[0]['msg'] if e.errors() else e}",
+                )
+            except (KeyError, ValueError, TypeError) as e:
+                registro.anotar_descarte(
+                    MotivoDescarte.ERROR_VALIDACION, f"{cruda.get('codigo')}: {e}"
+                )
+            if registro.filas_leidas % 50 == 0:
+                consola.print(f"  {registro.filas_leidas} iniciativas procesadas…")
+
+        for entrada in entradas:
+            clave = entrada.entrada_origen.value
+            registro.entradillas_por_origen[clave] = (
+                registro.entradillas_por_origen.get(clave, 0) + 1
+            )
+
+        if simular:
+            _resumen(entradas, registro, cargado=False)
+            _resumen_parcan(entradas)
+            consola.print("\n[yellow]Simulación: no se ha escrito nada en Supabase.[/yellow]")
+            return
+
+        from .carga.supabase import upsert_entradas
+
+        registro = upsert_entradas(entradas, registro)
+        cerrar_registro(registro)
+        _resumen(entradas, registro, cargado=True)
+        _resumen_parcan(entradas)
+
+    except Exception as e:  # noqa: BLE001
+        registro.exito = False
+        registro.errores.append(f"{type(e).__name__}: {e}")
+        consola.print(f"[red]La ejecución ha fallado: {type(e).__name__}: {e}[/red]")
+        if not simular:
+            try:
+                cerrar_registro(registro)
+            except Exception:  # noqa: BLE001
+                pass
+        raise typer.Exit(1) from e
+    finally:
+        if cerrojo is not None:
+            cerrojo.close()
+
+
+def _resumen_parcan(entradas: list) -> None:
+    """Desglose propio del Parlamento: quién propone y de dónde sale el área."""
+    import collections
+
+    if not entradas:
+        return
+    grupos = collections.Counter(e.grupo_parlamentario or "(sin grupo)" for e in entradas)
+    consola.print("\n[bold]Grupo proponente[/bold]")
+    for grupo, n in grupos.most_common():
+        consola.print(f"  {grupo[:46]:48} {n:>4}")
+
+    origen = collections.Counter(e.area_origen.value for e in entradas)
+    consola.print("\n[bold]Procedencia del área[/bold]")
+    for k, n in origen.most_common():
+        consola.print(f"  {k:26} {n:>4}  ({n / len(entradas):.0%})")
 
 
 def _tomar_cerrojo(simular: bool):
