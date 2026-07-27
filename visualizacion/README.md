@@ -75,11 +75,26 @@ por tecla; hecho de antemano, cada búsqueda son 9.
 **El buscador exige todas las palabras.** Buscar «vivienda lanzarote» devuelve lo
 que trata de ambas cosas, no todo lo de vivienda más todo lo de Lanzarote.
 
+**El conmutador de tema recuerda la elección.** Mientras no se toque el botón
+manda la preferencia del sistema; en cuanto se pulsa, gana lo elegido y se
+guarda entre visitas. El atributo se fija en un script del `<head>`, antes del
+primer pintado: si se pusiera más tarde, la página aparecería un instante en
+claro y saltaría a oscuro.
+
 **El modo oscuro tiene pasos propios, no es una inversión.** Sobre fondo oscuro
 la banda de luminosidad válida es más estrecha y el teal corporativo se sale por
 arriba, así que baja a `#00A896`. Los dos pares están verificados con el
 validador de paleta: separación para daltonismo ΔE 20,2 en deuteranopia y
 contraste por encima de 3:1 contra la superficie.
+
+Todo el tema vive en variables CSS y el gráfico lee de ellas sus colores, así
+que no hay dos definiciones que puedan desincronizarse.
+
+**El conmutador es Gobierno o Parlamento, sin opción «Todo».** Además de ser lo
+pedido, resuelve un problema de escala: el Gobierno publica veintitrés veces más
+que el Parlamento y, juntos en un mismo eje, la serie del Parlamento quedaba en
+una franja de un píxel. Con una sola fuente activa el gráfico tiene una serie,
+el eje se ajusta a ella y la leyenda sobra, porque el título nombra la fuente.
 
 ## Empotrarlo en la web
 
