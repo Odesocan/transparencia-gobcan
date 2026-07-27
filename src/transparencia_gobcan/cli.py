@@ -472,5 +472,96 @@ def clasificar(
     )
 
 
+
+
+@app.command()
+def notificar(
+    simular: bool = typer.Option(
+        False, "--simular", help="Genera el correo a fichero y no envía nada"
+    ),
+    marcar_historico: bool = typer.Option(
+        False, "--marcar-historico",
+        help="Marca como notificado todo lo anterior a ALERTAS_DESDE, sin enviar",
+    ),
+    limite: int | None = typer.Option(None, help="Máximo de entradas en este envío"),
+) -> None:
+    """Envía el aviso con las decisiones detectadas y aún no notificadas.
+
+    Solo entran las entradas marcadas como alerta cuya fecha sea igual o
+    posterior a ALERTAS_DESDE y que no se hayan notificado ya. Tras el envío se
+    sella `notificada_en`, de modo que reejecutarlo no repite avisos.
+    """
+    _configurar_registro()
+
+    from .alertas.correo import construir_mensaje, enviar
+    from .carga.supabase import conectar
+
+    esquema = entorno("SUPABASE_SCHEMA", "transp_gobcan")
+    desde = entorno("ALERTAS_DESDE", "2026-01-01")
+    destinatarias = [
+        d.strip() for d in (entorno("ALERTAS_DESTINATARIAS") or "").split(",") if d.strip()
+    ]
+    maximo = limite or int(cargar("alertas")["envio"]["maximo_por_envio"])
+
+    with conectar() as conexion, conexion.cursor() as cursor:
+        if marcar_historico:
+            # El histórico son tres años: avisar de decisiones de 2023 no tiene
+            # sentido. Se sellan como notificadas sin enviar nada.
+            cursor.execute(
+                f"""UPDATE {esquema}.entradas SET notificada_en = now()
+                     WHERE es_alerta AND notificada_en IS NULL AND fecha_real < %s""",
+                (desde,),
+            )
+            consola.print(
+                f"[green]{cursor.rowcount}[/green] alertas anteriores a {desde} "
+                "marcadas como notificadas, sin enviar nada."
+            )
+            return
+
+        cursor.execute(
+            f"""SELECT hash_dedup, fuente, fecha_real, titulo, entrada, url, area,
+                       territorio, materias, grupo_parlamentario, situacion
+                  FROM {esquema}.entradas
+                 WHERE es_alerta AND notificada_en IS NULL AND fecha_real >= %s
+                 ORDER BY fecha_real DESC, fuente
+                 LIMIT %s""",
+            (desde, maximo),
+        )
+        columnas = [c.name for c in cursor.description]
+        filas = [dict(zip(columnas, f, strict=True)) for f in cursor.fetchall()]
+
+        if not filas:
+            consola.print("No hay decisiones nuevas que notificar.")
+            return
+
+        consola.print(f"[bold]{len(filas)}[/bold] decisiones pendientes de aviso:")
+        for f in filas[:10]:
+            consola.print(f"  · [{f['fuente'][:4]}] {f['titulo'][:78]}")
+        if len(filas) > 10:
+            consola.print(f"  … y {len(filas) - 10} más")
+
+        if not destinatarias:
+            consola.print("[red]ALERTAS_DESTINATARIAS está vacío en el .env[/red]")
+            raise typer.Exit(1)
+
+        mensaje = construir_mensaje(filas, destinatarias)
+
+        if simular:
+            salida = pathlib.Path("aviso-simulado.html")
+            salida.write_text(mensaje.get_body("html").get_content(), encoding="utf-8")
+            consola.print("\n[yellow]Simulación:[/yellow] no se ha enviado nada.")
+            consola.print(f"  asunto      : {mensaje['Subject']}")
+            consola.print(f"  destinatarias: {mensaje['To']}")
+            consola.print(f"  vista previa: [cyan]{salida}[/cyan]")
+            return
+
+        enviar(mensaje)
+        cursor.execute(
+            f"UPDATE {esquema}.entradas SET notificada_en = now() WHERE hash_dedup = ANY(%s)",
+            ([f["hash_dedup"] for f in filas],),
+        )
+        consola.print(f"[green]Aviso enviado[/green] a {mensaje['To']} · {len(filas)} entradas")
+
+
 if __name__ == "__main__":
     app()

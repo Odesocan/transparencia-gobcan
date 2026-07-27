@@ -37,3 +37,6 @@ Thumbs.db
 *.log
 logs/
 tmp/
+
+# Vista previa del aviso, generada por `notificar --simular`
+aviso-simulado.html

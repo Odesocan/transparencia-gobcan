@@ -105,3 +105,54 @@ def _entrada(titulo: str, entradilla: str = ""):
         entrada_origen=OrigenEntradilla.SUMARIO,
         url="https://www3.gobiernodecanarias.org/noticias/x/", area="sanidad",
     )
+
+
+# ---------------------------------------------------------------------------
+# Composición del correo
+# ---------------------------------------------------------------------------
+def test_la_fecha_del_asunto_va_en_espanol():
+    """Regresión: strftime('%B') da "July" en el runner de GitHub Actions.
+
+    Es el mismo motivo por el que las fechas de Parcan se parsean a mano: el
+    runner arranca en inglés y puede no tener el locale es_ES instalado.
+    """
+    from datetime import date
+
+    from transparencia_gobcan.alertas.correo import fecha_larga
+
+    assert fecha_larga(date(2026, 7, 27)) == "27 de julio"
+    assert fecha_larga(date(2026, 1, 1)) == "1 de enero"
+    assert fecha_larga(date(2026, 12, 31)) == "31 de diciembre"
+
+
+def test_el_correo_dice_quien_impulsa_segun_la_fuente():
+    """En el Gobierno es la consejería; en el Parlamento, el grupo proponente."""
+    from transparencia_gobcan.alertas.correo import _quien_impulsa
+
+    gobierno = {"fuente": "gobierno", "area": "sanidad", "grupo_parlamentario": None}
+    assert "Sanidad" in _quien_impulsa(gobierno)
+
+    parlamento = {"fuente": "parlamento", "area": "vivienda",
+                  "grupo_parlamentario": "GP Socialista Canario"}
+    assert _quien_impulsa(parlamento) == "GP Socialista Canario"
+
+    # Un proyecto de ley lo presenta el Gobierno y no tiene grupo: se dice así
+    # en vez de dejarlo en blanco.
+    del_gobierno = {"fuente": "parlamento", "area": "hacienda", "grupo_parlamentario": None}
+    assert _quien_impulsa(del_gobierno) == "Iniciativa del Gobierno"
+
+
+def test_el_correo_escapa_el_html_de_la_fuente():
+    """Los títulos vienen de fuera: no pueden inyectar marcado en el correo."""
+    from transparencia_gobcan.alertas.correo import componer_html
+
+    fila = {
+        "fuente": "gobierno", "fecha_real": "2026-07-27", "area": "sanidad",
+        "titulo": '<script>alert("x")</script> Titular',
+        "entrada": "Entradilla de prueba.", "url": "https://ejemplo.org/",
+        "territorio": "Canarias", "materias": ["sanidad"],
+        "grupo_parlamentario": None, "situacion": None,
+    }
+    html = componer_html([fila])
+    assert "<script>" not in html
+    assert "&lt;script&gt;" in html
