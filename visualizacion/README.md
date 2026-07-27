@@ -15,7 +15,14 @@ los tres ficheros van juntos y se leen desde disco.
 index.html      la interfaz
 datos.json      el volcado, que regenera `transparencia exportar`
 d3.v7.min.js    D3 servido en local, sin CDN
+fuentes.css     las tipografías, también en local
+fuentes/        los .woff2 de Space Grotesk e Inter
 ```
+
+Nada sale a internet. Al principio las tipografías venían de Google Fonts, y ese
+`<link>` **bloquea el pintado**: hasta que Google responde, el navegador no
+muestra nada. Encima era incoherente con haber servido D3 en local. Con todo
+dentro, la página está lista en menos de 50 ms.
 
 ## Por qué lee un fichero y no la base
 
@@ -51,6 +58,10 @@ problema de escala sin recurrir a un doble eje, que deforma las proporciones.
 mayo de 2023 y se etiqueta un mes de cada tres, así que los eneros nunca caen en
 un múltiplo de tres: sin esto el eje decía «may ago nov feb may…» y no había
 manera de saber de qué año era cada barra.
+
+**El texto de búsqueda se normaliza una sola vez, al cargar.** Quitar tildes y
+pasar a minúscula 16.000 títulos y entradillas en cada pulsación costaba 27 ms
+por tecla; hecho de antemano, cada búsqueda son 9.
 
 **El buscador exige todas las palabras.** Buscar «vivienda lanzarote» devuelve lo
 que trata de ambas cosas, no todo lo de vivienda más todo lo de Lanzarote.
