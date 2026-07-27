@@ -47,6 +47,18 @@ El volcado se regenera con:
 transparencia exportar
 ```
 
+`datos.js` **no está en el repositorio**: son 8 MB que cambian en cada ejecución
+y lo engordarían muy rápido. Hay dos formas de conseguirlo:
+
+- **En local**, ejecutando el comando de arriba con las credenciales en `.env`.
+- **Desde GitHub**, descargando el artefacto `datos-interfaz` de la última
+  ejecución en la pestaña Actions. Se conserva catorce días y no hace falta
+  tener acceso a la base.
+
+Si algún día la interfaz vive en la web, lo suyo sería que el workflow subiese
+`datos.js` a donde la página lo lea —Supabase Storage o la carpeta de medios de
+WordPress— en vez de dejarlo como artefacto.
+
 Pesa unos 8 MB porque lleva las 16.000 entradas con su entradilla. El formato es
 columnar —una lista de campos y filas como arrays, con catálogos para las áreas,
 los grupos y los territorios— lo que lo deja en la mitad de lo que ocuparía como

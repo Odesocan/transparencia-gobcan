@@ -30,6 +30,10 @@ on:
         description: "Enviar el aviso por correo"
         type: boolean
         default: true
+      parlamento:
+        description: "Recorrer también el Parlamento (tarda ~50 min)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -44,9 +48,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -78,6 +82,18 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: transparencia exportar
 
+      # Sin esto el paso anterior no servía de nada: generaba el volcado en el
+      # runner y se perdía al terminar el job. Como artefacto queda descargable
+      # desde la pestaña Actions, así que cualquiera del equipo puede llevarse
+      # los datos frescos a la interfaz sin tener credenciales de la base.
+      - name: Guardar el volcado como artefacto
+        uses: actions/upload-artifact@v7
+        with:
+          name: datos-interfaz
+          path: visualizacion/datos.js
+          retention-days: 14
+          compression-level: 9
+
       - name: Enviar el aviso de decisiones detectadas
         if: ${{ inputs.notificar != false }}
         env:
@@ -99,10 +115,15 @@ jobs:
   extraer-parlamento:
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    if: github.event.schedule == '0 21 * * *' || github.event_name == 'workflow_dispatch'
+    # Solo en el cierre diario, o cuando se pida a propósito. Antes bastaba
+    # con lanzar el workflow a mano para que se comiera 50 minutos y 690
+    # peticiones al Parlamento, aunque solo se quisiera probar el Gobierno.
+    if: >-
+      github.event.schedule == '0 21 * * *' ||
+      (github.event_name == 'workflow_dispatch' && inputs.parlamento)
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
