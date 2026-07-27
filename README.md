@@ -139,6 +139,27 @@ El plan B con navegador solo se instala si hace falta:
 pip install -e ".[respaldo]" && playwright install chromium
 ```
 
+### Si el proyecto vive en una carpeta sincronizada con iCloud
+
+En macOS, iCloud Drive marca los ficheros `.pth` del entorno virtual con el
+atributo `hidden`, y Python 3.11 y posteriores **ignoran deliberadamente** los
+`.pth` ocultos. El resultado es un `ModuleNotFoundError: No module named
+'transparencia_gobcan'` justo después de una instalación que ha ido bien.
+
+No afecta a GitHub Actions ni a ningún entorno que no esté sincronizado. En
+local, lo más limpio es crear el entorno virtual fuera de la carpeta
+sincronizada:
+
+```bash
+python3 -m venv ~/.venvs/transparencia-gobcan && source ~/.venvs/transparencia-gobcan/bin/activate
+```
+
+Si prefieres mantenerlo dentro, se puede ejecutar así, que no depende del `.pth`:
+
+```bash
+PYTHONPATH=src python -m transparencia_gobcan.cli extraer --simular
+```
+
 ---
 
 ## Ejecución

@@ -11,13 +11,10 @@ from datetime import date
 
 import pytest
 
-pendiente = pytest.mark.xfail(raises=NotImplementedError, reason="Se implementa en el Hito 3")
-
 
 # --------------------------------------------------------------------------
 # Entradilla
 # --------------------------------------------------------------------------
-@pendiente
 def test_prefiere_el_sumario_del_blockquote():
     """El caso bueno: el gabinete pone los destacados en un <blockquote> inicial."""
     from transparencia_gobcan.modelos import OrigenEntradilla
@@ -34,7 +31,6 @@ def test_prefiere_el_sumario_del_blockquote():
     assert "Hospital Universitario Doctor" not in texto  # no arrastra el cuerpo
 
 
-@pendiente
 def test_cae_al_primer_parrafo_si_no_hay_sumario():
     """Sin blockquote, se usa el primer párrafo cortado por frase completa."""
     from transparencia_gobcan.modelos import OrigenEntradilla
@@ -46,7 +42,6 @@ def test_cae_al_primer_parrafo_si_no_hay_sumario():
     assert texto.endswith((".", "…"))  # nunca a mitad de palabra
 
 
-@pendiente
 def test_no_devuelve_entradilla_truncada_a_media_palabra():
     """Regresión del defecto del campo `excerpt` de la fuente.
 
@@ -64,7 +59,6 @@ def test_no_devuelve_entradilla_truncada_a_media_palabra():
 # --------------------------------------------------------------------------
 # Áreas
 # --------------------------------------------------------------------------
-@pendiente
 def test_traduce_la_consejeria_de_la_legislatura_actual():
     from transparencia_gobcan.transformacion.areas import normalizar_area
 
@@ -72,7 +66,6 @@ def test_traduce_la_consejeria_de_la_legislatura_actual():
     assert area == "sanidad"
 
 
-@pendiente
 def test_traduce_la_nomenclatura_anterior_para_entradas_de_2023():
     """Las entradas de mayo-julio de 2023 aún usan las categorías de la X legislatura."""
     from transparencia_gobcan.transformacion.areas import normalizar_area
@@ -81,7 +74,6 @@ def test_traduce_la_nomenclatura_anterior_para_entradas_de_2023():
     assert area == "bienestar_social"
 
 
-@pendiente
 def test_las_categorias_editoriales_no_son_area():
     """Portada tiene 20.220 entradas: tratarla como área contaminaría toda agregación."""
     from transparencia_gobcan.transformacion.areas import normalizar_area
@@ -91,7 +83,6 @@ def test_las_categorias_editoriales_no_son_area():
     assert "portada" not in [s.lower() for s in secundarias]
 
 
-@pendiente
 def test_area_nunca_es_nula():
     """Un NULL silencioso deja el 14% de las entradas invisible al filtrar por área."""
     from transparencia_gobcan.transformacion.areas import normalizar_area
@@ -103,7 +94,6 @@ def test_area_nunca_es_nula():
 # --------------------------------------------------------------------------
 # Territorio
 # --------------------------------------------------------------------------
-@pendiente
 @pytest.mark.parametrize(
     "texto, esperado",
     [
@@ -121,7 +111,6 @@ def test_deriva_el_territorio_del_texto(texto, esperado):
     assert territorio == esperado
 
 
-@pendiente
 def test_prefiere_la_coincidencia_mas_larga():
     """"San Bartolomé de Tirajana" no puede resolverse como "San Bartolomé" (Lanzarote)."""
     from transparencia_gobcan.transformacion.territorio import derivar_territorio
@@ -130,7 +119,6 @@ def test_prefiere_la_coincidencia_mas_larga():
     assert territorio == "San Bartolomé de Tirajana"
 
 
-@pendiente
 def test_marca_el_territorio_por_defecto_como_inferencia():
     """Una inferencia nuestra nunca puede presentarse como un dato de la fuente."""
     from transparencia_gobcan.modelos import OrigenTerritorio
@@ -138,3 +126,29 @@ def test_marca_el_territorio_por_defecto_como_inferencia():
 
     _, origen = derivar_territorio("El Gobierno aprueba el decreto", "")
     assert origen == OrigenTerritorio.POR_DEFECTO
+
+
+# --------------------------------------------------------------------------
+# Desambiguación territorial
+# --------------------------------------------------------------------------
+@pytest.mark.parametrize(
+    "titulo, entradilla, esperado",
+    [
+        # El Hospital La Candelaria está en Santa Cruz de Tenerife, no en el
+        # municipio de Candelaria. Y Candelaria Delgado es una persona.
+        # En una prueba sobre 94 entradas reales, 4 de las 5 coincidencias de
+        # "Candelaria" eran falsas por estos dos motivos.
+        ("La Unidad de Cuidados del Hospital La Candelaria obtiene la certificación", "", "Canarias"),
+        ("Canarias perpleja por el requerimiento de Delegación del Gobierno",
+         "Candelaria Delgado ha acordado con la ministra una nueva reunión", "Canarias"),
+        # Este sí es el municipio
+        ("Una unidad móvil de donación de sangre está operativa en Candelaria", "", "Candelaria"),
+        # Este hospital sí está en la isla que nombra
+        ("El Hospital Universitario de La Palma adapta un aseo para personas ostomizadas", "", "La Palma"),
+    ],
+)
+def test_desambigua_toponimos_que_tambien_son_personas_o_centros(titulo, entradilla, esperado):
+    from transparencia_gobcan.transformacion.territorio import derivar_territorio
+
+    territorio, _ = derivar_territorio(titulo, entradilla)
+    assert territorio == esperado

@@ -178,6 +178,14 @@ correspondencias_gobcan:
   - id: 9
     etiqueta_fuente: "Presidencia"
     area: presidencia_gobierno
+  # La Vicepresidencia es la categoría personal del vicepresidente, que además
+  # es consejero de Economía, Industria, Comercio y Autónomos: casi siempre
+  # convive con esa consejería. Se mapea a Presidencia del Gobierno porque en
+  # cargos_publicos no existe como área propia, y como las consejerías tienen
+  # prioridad, cuando aparezcan juntas seguirá ganando la consejería.
+  - id: 37
+    etiqueta_fuente: "Vicepresidencia"
+    area: presidencia_gobierno
   - id: 161
     etiqueta_fuente: "Consejo de Gobierno (raíz)"
     area: consejo_gobierno

@@ -166,6 +166,33 @@ islas:
     municipios:
       - Caleta de Sebo
 
+# ---------------------------------------------------------------------------
+# Desambiguación.
+#
+# Varios topónimos canarios son también nombres de persona, de hospital o de
+# advocación religiosa. Cotejarlos a secas produce territorios sencillamente
+# falsos: en una prueba sobre 94 entradas reales, 4 de las 5 coincidencias de
+# "Candelaria" no eran el municipio, sino el Hospital La Candelaria —que está
+# en Santa Cruz de Tenerife— y la consejera Candelaria Delgado.
+#
+# Estos patrones se eliminan del texto ANTES de buscar municipios, así que la
+# mención queda anulada. Van en minúsculas y sin tildes, igual que el cotejo.
+#
+# Al cambiar de gobierno hay que revisar los antropónimos de esta lista.
+# ---------------------------------------------------------------------------
+desambiguacion:
+  Candelaria:
+    - 'hospital\s+(universitario\s+)?(nuestra\s+senora\s+de\s+)?(la\s+)?candelaria'
+    - 'basilica\s+(de\s+)?(nuestra\s+senora\s+de\s+)?(la\s+)?candelaria'
+    - 'virgen\s+de\s+(la\s+)?candelaria'
+    - 'candelaria\s+delgado'      # consejera de Bienestar Social, XI legislatura
+  Valverde:
+    - 'valverde\s+de\s+la\s+virgen'   # municipio de León, no el de El Hierro
+  Frontera:
+    - 'frontera\s+(exterior|sur|maritima)'
+  La Oliva:
+    - 'la\s+oliva\s+(de|del)\s+'      # otras localidades peninsulares homónimas
+
 # Términos que indican ámbito autonómico explícito. Tienen prioridad sobre una
 # mención aislada de isla: "el Gobierno de Canarias invierte en Tenerife y..."
 # sigue siendo una medida canaria si el ámbito declarado es el archipiélago.

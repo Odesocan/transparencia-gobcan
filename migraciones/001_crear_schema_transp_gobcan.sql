@@ -174,8 +174,43 @@ CREATE TRIGGER trg_entradas_actualizado
 -- Seguridad
 --
 -- La herramienta es interna del equipo técnico. Se activa RLS sin políticas de
--- lectura pública: solo la clave de servicio escribe y lee. Cuando se decida
--- abrir la interfaz, se añadirá una política de lectura en una migración propia.
+-- lectura pública: solo la clave de servicio escribe y lee (service_role tiene
+-- BYPASSRLS en Supabase). Cuando se decida abrir la interfaz al público, se
+-- añadirá una política de lectura en una migración propia.
 -- ---------------------------------------------------------------------------
 ALTER TABLE transp_gobcan.entradas       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transp_gobcan.logs_ejecucion ENABLE ROW LEVEL SECURITY;
+
+-- ---------------------------------------------------------------------------
+-- Permisos de rol (específico de Supabase)
+--
+-- Los roles anon / authenticated / service_role solo existen en Supabase. Se
+-- comprueba su existencia para que esta migración siga siendo ejecutable en un
+-- PostgreSQL limpio, que es donde se prueba antes de aplicarla.
+--
+-- Se concede solo a service_role: la herramienta es interna y escribe con la
+-- clave de servicio. A anon y authenticated no se les da nada todavía.
+-- ---------------------------------------------------------------------------
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN
+        GRANT USAGE ON SCHEMA transp_gobcan TO service_role;
+        GRANT ALL PRIVILEGES ON ALL TABLES    IN SCHEMA transp_gobcan TO service_role;
+        GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA transp_gobcan TO service_role;
+        -- Que lo creado en el futuro herede los permisos sin repetir el GRANT
+        ALTER DEFAULT PRIVILEGES IN SCHEMA transp_gobcan
+            GRANT ALL PRIVILEGES ON TABLES TO service_role;
+        ALTER DEFAULT PRIVILEGES IN SCHEMA transp_gobcan
+            GRANT ALL PRIVILEGES ON SEQUENCES TO service_role;
+    END IF;
+END $$;
+
+-- ---------------------------------------------------------------------------
+-- Comprobación final: deja constancia de lo creado en la salida del editor SQL.
+-- ---------------------------------------------------------------------------
+SELECT table_name AS tabla,
+       (SELECT count(*) FROM information_schema.columns c
+         WHERE c.table_schema = 'transp_gobcan' AND c.table_name = t.table_name) AS columnas
+FROM information_schema.tables t
+WHERE table_schema = 'transp_gobcan'
+ORDER BY table_name;

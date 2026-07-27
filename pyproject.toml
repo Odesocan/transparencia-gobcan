@@ -18,8 +18,10 @@ dependencies = [
     "pydantic>=2.7",            # validación del modelo de datos
     "beautifulsoup4>=4.12",     # extracción de la entradilla y respaldo HTML
     "lxml>=5.2",
-    # Carga
-    "supabase>=2.5",
+    # Carga. psycopg2 en vez del cliente REST de Supabase, por coherencia con
+    # el resto de proyectos de Canarias en Datos y porque execute_values es
+    # bastante más rápido en cargas por lotes.
+    "psycopg2-binary>=2.9",
     "python-dotenv>=1.0",
     # Configuración y CLI
     "pyyaml>=6.0",
