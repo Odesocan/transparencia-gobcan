@@ -484,6 +484,13 @@ def notificar(
         help="Marca como notificado todo lo anterior a ALERTAS_DESDE, sin enviar",
     ),
     limite: int | None = typer.Option(None, help="Máximo de entradas en este envío"),
+    prueba: bool = typer.Option(
+        False, "--prueba",
+        help="Envía un correo de muestra con las últimas alertas y NO las sella",
+    ),
+    a: str | None = typer.Option(
+        None, "--a", help="Destinatarias solo para este envío, separadas por comas"
+    ),
 ) -> None:
     """Envía el aviso con las decisiones detectadas y aún no notificadas.
 
@@ -499,7 +506,7 @@ def notificar(
     esquema = entorno("SUPABASE_SCHEMA", "transp_gobcan")
     desde = entorno("ALERTAS_DESDE", "2026-01-01")
     destinatarias = [
-        d.strip() for d in (entorno("ALERTAS_DESTINATARIAS") or "").split(",") if d.strip()
+        d.strip() for d in (a or entorno("ALERTAS_DESTINATARIAS") or "").split(",") if d.strip()
     ]
     maximo = limite or int(cargar("alertas")["envio"]["maximo_por_envio"])
 
@@ -518,14 +525,23 @@ def notificar(
             )
             return
 
+        # En modo prueba se ignora tanto ALERTAS_DESDE como el sello de
+        # notificación: interesa ver cómo queda el correo, no repartir avisos.
+        # Y sobre todo no se sella nada, para que el envío real de mañana no
+        # se encuentre con que esas entradas ya constan como notificadas.
+        condicion = (
+            "es_alerta" if prueba
+            else "es_alerta AND notificada_en IS NULL AND fecha_real >= %s"
+        )
+        parametros = (maximo,) if prueba else (desde, maximo)
         cursor.execute(
             f"""SELECT hash_dedup, fuente, fecha_real, titulo, entrada, url, area,
                        territorio, materias, grupo_parlamentario, situacion
                   FROM {esquema}.entradas
-                 WHERE es_alerta AND notificada_en IS NULL AND fecha_real >= %s
+                 WHERE {condicion}
                  ORDER BY fecha_real DESC, fuente
                  LIMIT %s""",
-            (desde, maximo),
+            parametros,
         )
         columnas = [c.name for c in cursor.description]
         filas = [dict(zip(columnas, f, strict=True)) for f in cursor.fetchall()]
@@ -533,6 +549,9 @@ def notificar(
         if not filas:
             consola.print("No hay decisiones nuevas que notificar.")
             return
+
+        if prueba:
+            consola.print("[yellow]Modo prueba:[/yellow] no se sellará ninguna entrada.")
 
         consola.print(f"[bold]{len(filas)}[/bold] decisiones pendientes de aviso:")
         for f in filas[:10]:
@@ -555,7 +574,18 @@ def notificar(
             consola.print(f"  vista previa: [cyan]{salida}[/cyan]")
             return
 
+        if prueba:
+            mensaje.replace_header("Subject", "[Prueba] " + mensaje["Subject"])
+
         enviar(mensaje)
+
+        if prueba:
+            consola.print(
+                f"[green]Correo de prueba enviado[/green] a {mensaje['To']} · "
+                f"{len(filas)} entradas · [yellow]sin sellar[/yellow]"
+            )
+            return
+
         cursor.execute(
             f"UPDATE {esquema}.entradas SET notificada_en = now() WHERE hash_dedup = ANY(%s)",
             ([f["hash_dedup"] for f in filas],),
