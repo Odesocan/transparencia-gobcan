@@ -58,6 +58,10 @@ def extraer(
     desde: str | None = typer.Option(None, help="Fecha inicial en formato AAAA-MM-DD"),
     hasta: str | None = typer.Option(None, help="Fecha final en formato AAAA-MM-DD"),
     simular: bool = typer.Option(False, "--simular", help="Extrae y valida, pero no carga"),
+    desde_cache: bool = typer.Option(
+        False, "--desde-cache",
+        help="Solo parcan: reutiliza la última extracción volcada en disco",
+    ),
 ) -> None:
     """Ejecuta el pipeline completo: extracción, transformación, validación y carga."""
     _configurar_registro()
@@ -67,7 +71,7 @@ def extraer(
         raise typer.Exit(1)
 
     if fuente == "parcan":
-        _extraer_parcan(modo, simular)
+        _extraer_parcan(modo, simular, desde_cache)
         return
 
     from .carga.logs import abrir_registro, cerrar_registro
@@ -131,7 +135,7 @@ def extraer(
             cerrojo.close()
 
 
-def _extraer_parcan(modo: str, simular: bool) -> None:
+def _extraer_parcan(modo: str, simular: bool, desde_cache: bool = False) -> None:
     """Recorre el buscador de iniciativas del Parlamento y carga el resultado.
 
     A diferencia de Gobcan no hay modo incremental útil: el buscador no filtra
@@ -143,7 +147,7 @@ def _extraer_parcan(modo: str, simular: bool) -> None:
 
     from .alertas.clasificador import clasificar
     from .carga.logs import abrir_registro, cerrar_registro
-    from .extraccion.parcan_iniciativas import recorrer
+    from .extraccion.parcan_iniciativas import leer_cache, recorrer, ruta_cache
     from .modelos import MotivoDescarte
     from .transformacion.iniciativas import construir_entrada
 
@@ -156,9 +160,19 @@ def _extraer_parcan(modo: str, simular: bool) -> None:
     )
     consola.print("  [dim]crawl-delay de 3 s por petición: esto va a tardar[/dim]")
 
+    if desde_cache:
+        crudas = leer_cache(anillo)
+        if not crudas:
+            consola.print(f"[red]No hay extracción guardada en {ruta_cache(anillo)}[/red]")
+            raise typer.Exit(1)
+        consola.print(f"  [cyan]{len(crudas)}[/cyan] iniciativas recuperadas del volcado en disco")
+        fuente_datos = iter(crudas)
+    else:
+        fuente_datos = recorrer(anillo=anillo)
+
     entradas: list = []
     try:
-        for cruda in recorrer(anillo=anillo):
+        for cruda in fuente_datos:
             registro.filas_leidas += 1
             try:
                 entradas.append(clasificar(construir_entrada(cruda)))

@@ -88,7 +88,10 @@ class Entrada(BaseModel):
 
     # --- Contenido ---
     titulo: str = Field(min_length=5)
-    entrada: str = Field(min_length=10, description="Entradilla de 2-3 líneas o extracto de la iniciativa")
+    # Mínimo 5, no 20: el extracto de una iniciativa parlamentaria puede ser
+    # legítimamente muy breve ("La DANA.", "Salud Mental."). El umbral solo
+    # busca descartar campos vacíos, no extractos cortos pero válidos.
+    entrada: str = Field(min_length=5, description="Entradilla de 2-3 líneas o extracto")
     entrada_origen: OrigenEntradilla
     url: HttpUrl
 

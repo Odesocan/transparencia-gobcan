@@ -25,8 +25,11 @@ dos cosas: no se usan sus endpoints internos y se espera entre peticiones.
 
 from __future__ import annotations
 
+import json
 import logging
+import pathlib
 import re
+import tempfile
 import time
 from collections.abc import Iterator
 from typing import Any
@@ -188,16 +191,37 @@ def descargar_ficha(codigo: str, cliente: httpx.Client | None = None) -> dict[st
     return ficha
 
 
+def ruta_cache(anillo: str) -> pathlib.Path:
+    """Fichero donde se vuelca lo extraído, para poder recargar sin reextraer."""
+    return pathlib.Path(tempfile.gettempdir()) / f"transparencia-parcan-{anillo}.jsonl"
+
+
+def leer_cache(anillo: str) -> list[dict[str, Any]]:
+    """Recupera una extracción anterior desde el volcado en disco."""
+    ruta = ruta_cache(anillo)
+    if not ruta.exists():
+        return []
+    with ruta.open(encoding="utf-8") as f:
+        return [json.loads(linea) for linea in f if linea.strip()]
+
+
 def recorrer(legislatura: str = "11", anillo: str = "decisiones") -> Iterator[dict[str, Any]]:
     """Recorre un anillo completo de tipos y devuelve iniciativas con su ficha.
 
     Los anillos existen para no pagar 4.900 peticiones por el control ordinario:
     `decisiones` son las ~679 que llevan una decisión política detrás; `control`
     añade interpelaciones y comparecencias. Las preguntas quedan fuera.
+
+    Cada iniciativa se vuelca a disco según se extrae. Recorrer el anillo entero
+    cuesta casi una hora por el crawl-delay, y un fallo en la carga —una
+    restricción de la base, por ejemplo— tiraba a la basura todo ese trabajo.
+    Con el volcado se puede reintentar la carga con `--desde-cache`.
     """
     tipos = _cfg()[f"tipos_anillo_{anillo}"]
+    ruta = ruta_cache(anillo)
+    volcado = ruta.open("w", encoding="utf-8")
 
-    with _cliente() as cliente:
+    with _cliente() as cliente, volcado:
         for tipo in tipos:
             for entrada in buscar_iniciativas(legislatura, tipo, cliente):
                 try:
@@ -207,4 +231,6 @@ def recorrer(legislatura: str = "11", anillo: str = "decisiones") -> Iterator[di
                     # devuelve lo que trae el listado y se anota el fallo.
                     log.warning("Ficha %s no disponible: %s", entrada["codigo"], e)
                     entrada["error_ficha"] = f"{type(e).__name__}: {e}"
+                volcado.write(json.dumps(entrada, ensure_ascii=False) + "\n")
+                volcado.flush()
                 yield entrada
