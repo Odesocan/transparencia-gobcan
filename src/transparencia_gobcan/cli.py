@@ -566,7 +566,7 @@ def notificar(
 @app.command()
 def exportar(
     destino: str = typer.Option(
-        "visualizacion/datos.json", help="Fichero de salida para la interfaz"
+        "visualizacion/datos.js", help="Fichero de salida para la interfaz"
     ),
 ) -> None:
     """Vuelca los datos al fichero que consume la interfaz de consulta.

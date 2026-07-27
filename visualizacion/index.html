@@ -251,6 +251,9 @@ footer b{color:#fff;font-family:'Space Grotesk'}
 
 <div id="tooltip" role="status" aria-live="polite"></div>
 
+<!-- Los datos entran como script y no por fetch: Chrome bloquea las peticiones
+     desde file://, que es como se abre esta página al hacer doble clic. -->
+<script src="datos.js"></script>
 <script src="d3.v7.min.js"></script>
 <script>
 "use strict";
@@ -278,7 +281,7 @@ const estado = {fuente: "todo", texto: "", desde: "", hasta: "", dimension: "", 
 // columnas nuevas al final del volcado no rompe la interfaz.
 let IDX = {};
 
-d3.json("datos.json").then(d => {
+function arrancar(d){
   DATOS = d;
   C = d.catalogos;
   d.campos.forEach((nombre, i) => IDX[nombre] = i);
@@ -291,12 +294,16 @@ d3.json("datos.json").then(d => {
 
   poblarDimension();
   aplicar();
-}).catch(e => {
+}
+
+if (window.DATOS_TRANSPARENCIA){
+  arrancar(window.DATOS_TRANSPARENCIA);
+} else {
   document.getElementById("listado").innerHTML =
     `<div class="vacio"><strong>No se han podido cargar los datos</strong>
-     Comprueba que <code>datos.json</code> está junto a este fichero.<br>
-     <span style="font-size:.8rem">${e.message}</span></div>`;
-});
+     Falta <code>datos.js</code> junto a este fichero.
+     Se regenera con <code>transparencia exportar</code>.</div>`;
+}
 
 function fechaLarga(iso){
   const [a,m,d] = iso.split("-").map(Number);

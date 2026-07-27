@@ -13,16 +13,25 @@ los tres ficheros van juntos y se leen desde disco.
 
 ```
 index.html      la interfaz
-datos.json      el volcado, que regenera `transparencia exportar`
+datos.js        el volcado, que regenera `transparencia exportar`
 d3.v7.min.js    D3 servido en local, sin CDN
 fuentes.css     las tipografías, también en local
 fuentes/        los .woff2 de Space Grotesk e Inter
 ```
 
-Nada sale a internet. Al principio las tipografías venían de Google Fonts, y ese
+Nada sale a internet, y eso importa por dos motivos distintos.
+
+El primero es de velocidad: las tipografías venían de Google Fonts, y ese
 `<link>` **bloquea el pintado**: hasta que Google responde, el navegador no
-muestra nada. Encima era incoherente con haber servido D3 en local. Con todo
-dentro, la página está lista en menos de 50 ms.
+muestra nada.
+
+El segundo es que **Chrome bloquea `fetch()` desde `file://`**. Al abrir la
+página con doble clic, cualquier petición —aunque sea a un fichero de al lado—
+falla con *«Cross origin requests are only supported for protocol schemes:
+http, https…»*. Por eso el volcado es un `.js` que declara una variable global
+en vez de un `.json` que haya que ir a buscar: los `<script src>` no están
+sujetos a esa restricción. Por HTTP funciona exactamente igual, así que no hay
+que mantener dos versiones.
 
 ## Por qué lee un fichero y no la base
 

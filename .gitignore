@@ -42,4 +42,4 @@ tmp/
 aviso-simulado.html
 
 # Volcado de la interfaz: 8 MB que se regeneran con `transparencia exportar`
-visualizacion/datos.json
+visualizacion/datos.js

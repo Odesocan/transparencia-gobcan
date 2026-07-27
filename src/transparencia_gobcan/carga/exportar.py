@@ -5,12 +5,19 @@ abrir la base al navegador —lo que obligaría a exponer el schema y a escribir
 políticas de lectura pública— y el mismo fichero sirve en local y empotrado en
 un bloque de Divi.
 
+Se genera como .js y no como .json, y esto NO es un capricho: Chrome bloquea
+`fetch()` cuando la página se abre con doble clic, es decir desde `file://`, y
+responde "Cross origin requests are only supported for protocol schemes: http,
+https…". Como la herramienta se usa abriendo el fichero a mano, un .json
+cargado con fetch falla siempre salvo que se levante un servidor. Los
+`<script src>` no están sujetos a esa restricción, así que el volcado declara
+una variable global y la interfaz la lee sin pedir nada por red. Por HTTP
+funciona exactamente igual.
+
 El formato es columnar: en vez de 16.000 objetos con las mismas claves
 repetidas, se guarda una lista de campos y una lista de filas como arrays. Las
 áreas, los grupos y los territorios se sustituyen por su índice en un catálogo.
-Suena a microoptimización, pero baja el fichero de 11,6 MB a menos de la mitad,
-y eso es la diferencia entre que la interfaz abra al instante o tarde un segundo
-largo en un portátil normal.
+Suena a microoptimización, pero baja el fichero de 11,6 MB a menos de la mitad.
 """
 
 from __future__ import annotations
@@ -33,7 +40,7 @@ CAMPOS = [
 
 
 def exportar(destino: pathlib.Path) -> dict[str, Any]:
-    """Vuelca las entradas a un JSON compacto y devuelve un resumen."""
+    """Vuelca las entradas a un fichero compacto y devuelve un resumen."""
     from .supabase import conectar
 
     esquema = entorno("SUPABASE_SCHEMA", "transp_gobcan")
@@ -102,8 +109,13 @@ def exportar(destino: pathlib.Path) -> dict[str, Any]:
     }
 
     destino.parent.mkdir(parents=True, exist_ok=True)
+    cuerpo = json.dumps(datos, ensure_ascii=False, separators=(",", ":"))
     destino.write_text(
-        json.dumps(datos, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
+        "/* Volcado de transparencia-gobcan. Generado por `transparencia exportar`.\n"
+        " * Se declara como variable global en vez de servirse como JSON porque\n"
+        " * Chrome bloquea fetch() desde file://, y la interfaz se abre a mano. */\n"
+        f"window.DATOS_TRANSPARENCIA = {cuerpo};\n",
+        encoding="utf-8",
     )
     peso = destino.stat().st_size
 
