@@ -26,6 +26,10 @@ on:
         type: choice
         options: [incremental, historico]
         default: incremental
+      notificar:
+        description: "Enviar el aviso por correo"
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -55,9 +59,51 @@ jobs:
       - name: Comprobar la configuración antes de tocar datos
         run: transparencia validar-config
 
-      - name: Extraer
+      - name: Comprobar que las credenciales llegan a la base
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: transparencia probar-conexion
+
+      - name: Extraer del Gobierno de Canarias
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           ENTORNO: produccion
         run: transparencia extraer --fuente gobcan --modo "${{ inputs.modo || 'incremental' }}"
+
+      # El aviso va en un paso propio y después de la carga: si la extracción
+      # falla no queremos mandar un correo a medias, y si falla el envío
+      # queremos que los datos ya estén guardados de todos modos.
+      - name: Enviar el aviso de decisiones detectadas
+        if: ${{ inputs.notificar != false }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SMTP_HOST: smtp.gmail.com
+          SMTP_PORT: "587"
+          SMTP_USUARIO: ${{ secrets.SMTP_USUARIO }}
+          SMTP_CONTRASENA: ${{ secrets.SMTP_CONTRASENA }}
+          ALERTAS_REMITENTE: ${{ secrets.SMTP_USUARIO }}
+          ALERTAS_DESTINATARIAS: ${{ vars.ALERTAS_DESTINATARIAS }}
+          ALERTAS_DESDE: ${{ vars.ALERTAS_DESDE }}
+          ENTORNO: produccion
+        run: transparencia notificar
+
+  # El Parlamento va aparte: su robots.txt declara Crawl-delay de 3 segundos y
+  # recorrer el anillo de decisiones lleva unos 35 minutos. No tiene sentido
+  # pagarlo cada media hora para una fuente que produce 0,6 entradas al día,
+  # así que se recorre solo en el cierre diario.
+  extraer-parlamento:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    if: github.event.schedule == '0 21 * * *' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e .
+      - name: Extraer iniciativas del Parlamento
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ENTORNO: produccion
+        run: transparencia extraer --fuente parcan

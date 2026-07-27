@@ -166,11 +166,40 @@ PYTHONPATH=src python -m transparencia_gobcan.cli extraer --simular
 
 ```bash
 transparencia validar-config                          # coherencia de los vocabularios
-transparencia extraer --modo incremental              # pasada normal
+transparencia probar-conexion                         # las credenciales llegan a la base
+transparencia extraer --modo incremental              # pasada normal del Gobierno
 transparencia extraer --modo historico --desde 2023-05-01
 transparencia extraer --simular                       # extrae y valida, sin cargar
+transparencia extraer --fuente parcan                 # iniciativas del Parlamento
+transparencia extraer --fuente parcan --desde-cache   # reintenta solo la carga
 transparencia clasificar --recalcular                 # tras ampliar config/alertas.yaml
+transparencia notificar --simular                     # genera el aviso a fichero
+transparencia notificar                               # envía el aviso por correo
+transparencia notificar --marcar-historico            # sella lo viejo sin enviar
 ```
+
+### Alertas por correo
+
+Se avisa de las decisiones detectadas, no de todo lo capturado: unas dos al día
+según lo medido sobre tres años. El correo lleva el título, quién impulsa la
+medida —la consejería en el Gobierno, el grupo proponente en el Parlamento—, un
+resumen breve y las áreas afectadas.
+
+El envío usa el SMTP de Google Workspace, que es quien gestiona el correo de
+`odesocan.org`. Hace falta una **contraseña de aplicación**, no la de la cuenta:
+se genera en <https://myaccount.google.com/apppasswords> y requiere tener la
+verificación en dos pasos activada.
+
+`notificada_en` se sella tras cada envío, así que reejecutar el comando no
+repite avisos. Antes del primer envío en producción conviene ejecutar
+`notificar --marcar-historico`, que sella todo lo anterior a `ALERTAS_DESDE`
+sin mandar nada: si no, el primer correo intentaría notificar tres años de
+golpe.
+
+Sobre permisos: no es comunicación comercial sino interna, entre buzones del
+propio dominio y con contenido público, así que no requiere consentimiento
+previo. Sí conviene avisar al equipo y ofrecer forma de darse de baja, que el
+pie del correo indica.
 
 Pruebas:
 
