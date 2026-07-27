@@ -19,7 +19,7 @@ import re
 from datetime import date, datetime
 from typing import Any
 
-from ..alertas.clasificador import _patrones, normalizar
+from ..alertas.clasificador import normalizar
 from ..config import cargar
 from ..modelos import Entrada, Fuente, OrigenArea, OrigenEntradilla
 from .areas import AREA_RESIDUAL
@@ -52,8 +52,23 @@ def _mapas() -> dict:
     cfg = cargar("areas")
     return {
         "comisiones": cfg.get("correspondencias_parcan_comisiones") or {},
-        "materias": cfg.get("correspondencias_materia_area") or {},
         "grupos": {g["nombre"] for g in cfg.get("grupos_parlamentarios", [])},
+    }
+
+
+@functools.lru_cache(maxsize=1)
+def _clasificador_area() -> dict:
+    """Compila el vocabulario de clasificación por área.
+
+    Es distinto del de alertas y está separado a propósito: aquel responde
+    "¿esto nos interesa vigilar?" y este "¿de qué consejería es?". Compartirlos
+    obligaba a ampliar el de alertas para poder clasificar iniciativas de sector
+    eléctrico o de impuestos, inundando el correo de avisos que no vigilamos.
+    """
+    cfg = cargar("clasificacion_area")
+    return {
+        "areas": {k: re.compile(v, re.VERBOSE) for k, v in cfg["areas"].items()},
+        "ruido": [re.compile(p, re.VERBOSE) for p in cfg.get("ruido", [])],
     }
 
 
@@ -62,7 +77,7 @@ def derivar_area(comision: str | None, extracto: str) -> tuple[str, OrigenArea]:
 
     Prioridad:
         1. Comisión dictaminante, que es un dato publicado por la Cámara.
-        2. Materias detectadas en el extracto, que es una deducción nuestra.
+        2. Vocabulario de clasificación sobre el extracto: deducción nuestra.
         3. Área residual, visible al filtrar y vigilada en logs.
     """
     mapas = _mapas()
@@ -74,12 +89,22 @@ def derivar_area(comision: str | None, extracto: str) -> tuple[str, OrigenArea]:
         # Comisión conocida pero no sectorial (Reglamento, Cabildos...): no
         # designa área de gobierno, así que se sigue por el extracto.
 
+    clasificador = _clasificador_area()
     texto = normalizar(extracto)
-    encontradas = [k for k, rx in _patrones()["materias"].items() if rx.search(texto)]
-    for materia in encontradas:
-        area = mapas["materias"].get(materia)
-        if area:
-            return area, OrigenArea.INFERIDO_TEXTO
+    # Los términos genéricos —Canarias, Gobierno, ley— aparecen en casi toda
+    # iniciativa y no discriminan: se quitan antes de contar.
+    for rx in clasificador["ruido"]:
+        texto = rx.sub(" ", texto)
+
+    # Gana el área con más coincidencias distintas; el empate lo rompe el orden
+    # del fichero, donde las áreas más específicas van antes.
+    puntuaciones = [
+        (len({m.group(0) for m in rx.finditer(texto)}), area)
+        for area, rx in clasificador["areas"].items()
+    ]
+    mejor = max(puntuaciones, key=lambda p: p[0])
+    if mejor[0] > 0:
+        return mejor[1], OrigenArea.INFERIDO_TEXTO
 
     return AREA_RESIDUAL, OrigenArea.POR_DEFECTO
 

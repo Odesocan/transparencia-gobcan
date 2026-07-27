@@ -88,9 +88,12 @@ materias:
   empleo: >-
     \b(empleo|desempleo|convenios?\s+colectiv[oa]s?|salari[oa]s?|
     personas\s+trabajadoras|huelgas?|siniestralidad\s+laboral)\b
+  # (in)? porque la fuente alterna "migración" e "inmigración", y el límite de
+  # palabra inicial impedía que el segundo casara: 30 entradas del histórico
+  # hablaban de inmigración sin quedar clasificadas.
   migraciones: >-
-    \b(migracion(es)?|migrantes|migratori[oa]s?|menores\s+no\s+acompanados|
-    acogida|asilo|refugiad[oa]s?)\b
+    \b((in)?migracion(es)?|(in)?migrantes|migratori[oa]s?|
+    menores\s+no\s+acompanados|acogida|asilo|refugiad[oa]s?)\b
   dependencia: >-
     \b(dependencia|cuidados|teleasistencia|centros?\s+de\s+dia|
     residencias?\s+de\s+mayores|sociosanitari[oa]s?)\b

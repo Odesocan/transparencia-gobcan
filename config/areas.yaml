@@ -258,21 +258,6 @@ correspondencias_parcan_comisiones:
   "De Control de Radiotelevisión Canaria": null
   "De Relaciones con la Audiencia de Cuentas de Canarias": null
 
-# Materias de config/alertas.yaml -> área de gobierno. Se usa como último
-# recurso cuando la iniciativa no pasa por comisión, y el resultado se marca
-# siempre como inferido para no confundirlo con un dato de la fuente.
-correspondencias_materia_area:
-  sanidad: sanidad
-  educacion: educacion
-  vivienda: obras_publicas
-  servicios_sociales: bienestar_social
-  dependencia: bienestar_social
-  violencia_genero: bienestar_social
-  migraciones: bienestar_social
-  empleo: turismo_empleo
-  territorio_aguas: politica_territorial
-  emergencia_social: bienestar_social
-
 # ---------------------------------------------------------------------------
 # Grupos parlamentarios de la XI legislatura. Nomenclatura tomada de
 # cargos_publicos.cp_parlamento_diputados.grupo_parlamentario, que coincide

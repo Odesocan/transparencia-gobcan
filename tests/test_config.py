@@ -83,3 +83,62 @@ def test_no_hay_municipios_repetidos_entre_islas():
         for m in isla["municipios"]:
             assert m not in vistos, f"{m} aparece en {vistos.get(m)} y en {isla['nombre']}"
             vistos[m] = isla["nombre"]
+
+
+# ---------------------------------------------------------------------------
+# El vocabulario de clasificación por área es distinto del de alertas.
+# ---------------------------------------------------------------------------
+@pytest.mark.parametrize(
+    "area, termino",
+    [
+        ("sanidad", "atencion primaria en el area de salud"),
+        ("educacion", "el profesorado y el alumnado de formacion profesional"),
+        ("universidades", "patrimonio cultural y museos"),
+        ("obras_publicas", "vivienda protegida y transporte"),
+        ("bienestar_social", "accesibilidad universal y dependencia"),
+        ("presidencia_aapp", "cabildos insulares y regimen local"),
+        ("transicion_ecologica", "parque natural y energia renovable"),
+        ("agricultura", "ganaderia y pesca"),
+        ("turismo_empleo", "alojamientos turisticos y empleo"),
+        ("hacienda", "presupuestos generales e impuestos"),
+        ("economia", "industria y comercio de autonomos"),
+        ("politica_territorial", "ordenacion del territorio y suelo rustico"),
+    ],
+)
+def test_cada_area_encuentra_sus_terminos_caracteristicos(area, termino):
+    """Regresión de un fallo que compila sin error y no encuentra nada.
+
+    `naturales?` significa "naturale" más una "s" opcional, así que NO casa
+    "natural": la forma correcta es `natural(es)?`. El patrón compilaba
+    perfectamente y dejaba "Parque Natural de Jandía" sin clasificar. Había
+    cinco patrones con ese mismo defecto. Es el mismo tipo de fallo que el del
+    plural en "violencias machistas", y por eso ahora se vigila término a
+    término en vez de comprobar solo que el patrón compila.
+    """
+    patron = re.compile(cargar("clasificacion_area")["areas"][area], re.VERBOSE)
+    assert patron.search(termino), f"El área {area!r} no detecta {termino!r}"
+
+
+@pytest.mark.parametrize(
+    "area, singular, plural",
+    [
+        ("transicion_ecologica", "parque natural", "parques naturales"),
+        ("transicion_ecologica", "energia renovable", "energias renovables"),
+        ("politica_territorial", "plan insular", "planes insulares"),
+        ("politica_territorial", "asentamiento rural", "asentamientos rurales"),
+        ("presidencia_aapp", "cabildo insular", "cabildos insulares"),
+        ("hacienda", "presupuesto general", "presupuestos generales"),
+        ("educacion", "federacion deportiva", "federaciones deportivas"),
+    ],
+)
+def test_los_patrones_casan_singular_y_plural(area, singular, plural):
+    """Regresión: `naturales?` casa "naturale", no "natural".
+
+    Este es el error que más caro sale: el patrón compila sin quejarse y no
+    encuentra nada. Dejaba "Parque Natural de Jandía" sin clasificar, y había
+    cinco patrones con el mismo defecto. La forma correcta es `natural(es)?`.
+    Comprobar que el patrón compila no basta: hay que comprobar que encuentra.
+    """
+    patron = re.compile(cargar("clasificacion_area")["areas"][area], re.VERBOSE)
+    assert patron.search(singular), f"{area}: no detecta el singular {singular!r}"
+    assert patron.search(plural), f"{area}: no detecta el plural {plural!r}"

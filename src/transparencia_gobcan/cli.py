@@ -403,8 +403,58 @@ def clasificar(
     if not recalcular:
         consola.print("Nada que hacer: usa [cyan]--recalcular[/cyan] para reevaluar el histórico.")
         return
+
+    from .alertas.clasificador import TIPOS_QUE_SON_DECISION, _patrones, normalizar
+    from .carga.supabase import conectar
+
+    esquema = entorno("SUPABASE_SCHEMA", "transp_gobcan")
+    patrones = _patrones()
+    cambios: list[tuple] = []
+    antes = despues = 0
+
+    # Se reevalúa desde la base: el vocabulario solo mira título y entradilla,
+    # así que no hace falta volver a tocar la fuente. Eso permite afinar el
+    # vocabulario cuantas veces haga falta contra tres años reales.
+    with conectar() as conexion, conexion.cursor() as cursor:
+        cursor.execute(
+            f"SELECT hash_dedup, titulo, entrada, tipo_iniciativa, es_alerta FROM {esquema}.entradas"
+        )
+        filas = cursor.fetchall()
+        consola.print(f"Reevaluando [cyan]{len(filas)}[/cyan] entradas…")
+
+        for hash_dedup, titulo, entrada, tipo, era_alerta in filas:
+            texto = normalizar(f"{titulo} {entrada}")
+            actos = [k for k, rx in patrones["actos"].items() if rx.search(texto)]
+            materias = [k for k, rx in patrones["materias"].items() if rx.search(texto)]
+            if tipo and tipo in TIPOS_QUE_SON_DECISION:
+                actos.append("iniciativa_parlamentaria")
+            institucion = bool(
+                patrones["cabildos"].search(texto) or patrones["ayuntamientos"].search(texto)
+            )
+            motivo = (
+                "entidad_propia" if patrones["propias"].search(texto)
+                else "decision_con_materia" if (actos and materias)
+                else "institucion_con_materia" if (institucion and materias)
+                else None
+            )
+            antes += bool(era_alerta)
+            despues += motivo is not None
+            cambios.append((actos, materias, motivo is not None, motivo, hash_dedup))
+
+        from psycopg2.extras import execute_batch
+
+        execute_batch(
+            cursor,
+            f"""UPDATE {esquema}.entradas
+                   SET actos = %s, materias = %s, es_alerta = %s, motivo_alerta = %s
+                 WHERE hash_dedup = %s""",
+            cambios,
+            page_size=500,
+        )
+
     consola.print(
-        "[yellow]Pendiente: se implementa junto con la capa de alertas por correo.[/yellow]"
+        f"[green]Reclasificación terminada[/green] · alertas: {antes} → {despues} "
+        f"({despues - antes:+d})"
     )
 
 

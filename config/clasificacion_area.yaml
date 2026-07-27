@@ -1,0 +1,128 @@
+# Vocabulario de clasificación por área de gobierno.
+#
+# OJO: este fichero NO decide qué se notifica. Eso es `alertas.yaml`, que es
+# deliberadamente restrictivo porque responde a "¿esto nos interesa vigilar?".
+# Aquí se responde otra pregunta distinta: "¿de qué consejería es esto?".
+#
+# Están separados a propósito. Mezclarlos obligaba a ampliar el vocabulario de
+# alertas para poder clasificar iniciativas de sector eléctrico o de impuestos
+# especiales, y eso habría inundado el correo de avisos sobre materias que el
+# observatorio no vigila, tirando por tierra la calibración de 1,90 avisos/día.
+#
+# Cuándo se usa: solo cuando la fuente no publica el área. En Gobcan nunca hace
+# falta, porque la trae la categoría del portal. En el Parlamento se usa cuando
+# la iniciativa no pasa por comisión y no hay comisión dictaminante, que es el
+# caso de las proposiciones no de ley en pleno. El resultado se marca siempre
+# como `inferido`, nunca como dato de la fuente.
+#
+# Cómo se resuelve: gana el área con más coincidencias distintas. En caso de
+# empate, el orden de este fichero decide, así que las áreas más específicas
+# van antes que las genéricas.
+#
+# Los patrones se compilan con re.VERBOSE sobre texto normalizado (minúsculas,
+# sin tildes), igual que en alertas.yaml: los espacios con significado van como
+# `\s+`, porque los literales se ignoran.
+
+version: 1
+fecha_revision: 2026-07-27
+
+areas:
+
+  sanidad: >-
+    \b(sanidad|sanitari[oa]s?|hospital(es|ari[oa]s?)?|atencion\s+primaria|
+    salud(\s+publica|\s+mental)?|farmacia|farmaceutic[oa]s?|medicament[oa]s?|
+    listas?\s+de\s+espera|urgencias|consultorios?|centros?\s+de\s+salud|
+    servicio\s+canario\s+de\s+la\s+salud|adicciones|vacunacion|
+    profesionales\s+sanitari[oa]s?|conciertos?\s+sanitari[oa]s?|
+    asistencial(es)?|pacientes?|enfermer[oa]s?|medic[oa]s?)\b
+
+  educacion: >-
+    \b(educacion|educativ[oa]s?|escolar(es|izacion)?|profesorado|alumnado|
+    formacion\s+profesional|comedor(es)?\s+escolar(es)?|becas?|
+    colegios?|institutos?|centros?\s+educativ[oa]s?|ensenanza|docentes?|
+    curriculo|deportes?|actividad\s+fisica|federacion(es)?\s+deportivas?)\b
+
+  universidades: >-
+    \b(universidad(es|ari[oa]s?)?|ulpgc|ull|ciencia|cientific[oa]s?|
+    investigacion|innovacion|i\+d|cultura(l(es)?)?|patrimonio\s+(cultural|historico)|
+    museos?|bibliotecas?|archivos?|artes?\s+escenicas?|cine|audiovisual|
+    universitari[oa]s?|ebau|patentes?|talento\s+innovador)\b
+
+  obras_publicas: >-
+    \b(viviendas?|alquiler(es)?|vpo|vivienda\s+protegida|desahucios?|
+    infravivienda|carreteras?|transportes?|movilidad|obras?\s+publicas?|
+    infraestructuras?|puertos?|aeropuertos?|guaguas?|tranvia|
+    tren|ferroviari[oa]s?|licencias?\s+urbanistica|aeroportuari[oa]s?|
+    rutas?\s+aereas?|obligacion(es)?\s+de\s+servicio\s+publico|
+    maritim[oa]s?|navier[oa]s?)\b
+
+  bienestar_social: >-
+    \b(servicios\s+sociales|dependencia|discapacidad|personas\s+mayores|
+    menores(\s+no\s+acompanados)?|infancia|familias?|juventud|igualdad|
+    violencias?\s+(de\s+genero|machistas?|sexual(es)?)|maltrato|feminicidios?|
+    (in)?migracion(es)?|(in)?migrantes|migratori[oa]s?|acogida|asilo|refugiad[oa]s?|
+    pobreza|exclusion\s+social|renta\s+canaria\s+de\s+ciudadania|
+    tercer\s+sector|voluntariado|cuidados|teleasistencia|
+    centros?\s+de\s+dia|residencias?\s+de\s+mayores|sociosanitari[oa]s?|
+    diversidad|lgtbi|memoria\s+historica|accesibilidad(\s+universal)?|
+    conciliacion|corresponsab(le|ilidad))\b
+
+  presidencia_aapp: >-
+    \b(administracion(es)?\s+publicas?|funcion\s+publica|empleo\s+publico|
+    justicia|juzgados?|colegios?\s+profesionales|seguridad|emergencias|
+    policia\s+canaria|proteccion\s+civil|bomberos|
+    transparencia|gobierno\s+abierto|regimen\s+juridico|
+    procedimiento\s+administrativo|simplificacion\s+administrativa|
+    funcionari[oa]s?|oposiciones|relaciones\s+institucionales|
+    cabildos?\s+insular(es)?|regimen\s+local|entes?\s+public[oa]s?|
+    radiotelevision|rtvc|administracion\s+local)\b
+
+  transicion_ecologica: >-
+    \b(transicion\s+ecologica|energia|energetic[oa]s?|electric[oa]s?|
+    renovables?|eolic[oa]s?|fotovoltaic[oa]s?|cambio\s+climatico|
+    descarbonizacion|residuos?|reciclaje|medio\s+ambiente|ambiental(es)?|
+    biodiversidad|espacios?\s+natural(es)?|parques?\s+natural(es)?|
+    sostenibilidad|emisiones|contaminacion|incendios?\s+forestal(es)?|
+    gestion\s+forestal|hidrocarburos?|combustibles?|hidrobombeo|
+    huella\s+hidrica)\b
+
+  agricultura: >-
+    \b(agricultura|agricol[oa]s?|ganaderi[oa]a?|ganader[oa]s?|pesca|pesquer[oa]s?|
+    agroalimentari[oa]s?|platano|tomate|vinedo|vitivinicol[oa]s?|
+    soberania\s+alimentaria|posei|sanidad\s+animal|acuicultura|
+    agricultores|ganaderos|cofradias?|denominacion(es)?\s+de\s+origen|
+    sector\s+primario|variedades?\s+(autorizadas?|vegetal(es)?))\b
+
+  turismo_empleo: >-
+    \b(turismo|turistic[oa]s?|hotel(es|er[oa]s?)?|alojamientos?\s+turistic[oa]s?|
+    vivienda\s+vacacional|empleo|desempleo|paro|
+    formacion\s+para\s+el\s+empleo|servicio\s+canario\s+de\s+empleo|
+    relaciones\s+laborales|convenios?\s+colectiv[oa]s?|huelgas?|
+    siniestralidad\s+laboral|personas\s+trabajadoras)\b
+
+  hacienda: >-
+    \b(hacienda|presupuestos?\s+general(es)?|tributos?|tributari[oa]s?|
+    impuestos?|igic|aiem|fiscal(idad|es)?|regimen\s+economico\s+y\s+fiscal|
+    ref\b|union\s+europea|fondos?\s+europe[oa]s?|feder|financiacion|
+    deuda\s+publica|gasto\s+publico|estabilidad\s+presupuestaria)\b
+
+  economia: >-
+    \b(economia|economic[oa]s?|industria|industrial(es)?|comercio|comercial(es)?|
+    autonom[oa]s?|pymes?|emprendimiento|emprendedor(es|as)?|
+    competitividad|consumo|consumidor(es|as)?|artesania|mineri[oa]a?|
+    zona\s+especial\s+canaria|zec\b|internacionalizacion)\b
+
+  politica_territorial: >-
+    \b(ordenacion\s+del\s+territorio|territorial(es)?|urbanismo|urbanistic[oa]s?|
+    suelo\s+(rustico|urbano|urbanizable)|planeamiento|plan(es)?\s+insular(es)?|
+    aguas?|ciclo\s+del\s+agua|desaladoras?|depuradoras?|sequia|
+    emergencia\s+hidrica|regadi[oa]s?|cohesion\s+territorial|
+    consejos?\s+insular(es)?\s+de\s+aguas|asentamientos?\s+rural(es)?|
+    delimitacion\s+grafica)\b
+
+# Términos que aparecen en casi cualquier iniciativa y no discriminan nada.
+# Se descuentan antes de contar coincidencias para que no inclinen la balanza.
+ruido:
+  - >-
+    \b(canarias|canari[oa]s?|gobierno|parlamento|comunidad\s+autonoma|
+    archipielago|islas?|ley(es)?|decreto|modificacion|articulo)\b

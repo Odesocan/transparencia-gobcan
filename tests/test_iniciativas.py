@@ -54,8 +54,28 @@ def test_sin_comision_el_area_se_deduce_y_se_marca():
     assert origen == OrigenArea.INFERIDO_TEXTO
 
 
-def test_sin_senal_queda_en_el_area_residual():
-    area, origen = derivar_area(None, "De modificación de la Ley 5/1986 del impuesto especial")
+@pytest.mark.parametrize(
+    "extracto, esperado",
+    [
+        # Estos tres los clasificaba mal el vocabulario de alertas, que solo
+        # cubre derechos sociales. El de clasificación por área cubre todo el
+        # espectro de la acción de gobierno, que es otra pregunta distinta.
+        ("De modificación de la Ley 5/1986 del impuesto especial", "hacienda"),
+        ("Por la que se modifica la Ley de regulación del sector eléctrico canario",
+         "transicion_ecologica"),
+        ("Sobre la ordenación del suelo rústico y el planeamiento insular",
+         "politica_territorial"),
+    ],
+)
+def test_el_vocabulario_de_area_cubre_lo_que_el_de_alertas_no(extracto, esperado):
+    area, origen = derivar_area(None, extracto)
+    assert area == esperado
+    assert origen == OrigenArea.INFERIDO_TEXTO
+
+
+def test_sin_ninguna_senal_queda_en_el_area_residual():
+    """Los términos genéricos no bastan: Canarias o Gobierno aparecen en todo."""
+    area, origen = derivar_area(None, "De modificación del artículo 3 de la ley de Canarias")
     assert area == "sin_asignar"
     assert origen == OrigenArea.POR_DEFECTO
 
