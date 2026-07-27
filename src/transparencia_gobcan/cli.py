@@ -189,6 +189,69 @@ def validar_config() -> None:
     )
 
 
+@app.command("probar-conexion")
+def probar_conexion() -> None:
+    """Comprueba que las credenciales del `.env` llegan a la base de datos.
+
+    Solo lee: cuenta las filas que ya hay en las dos tablas. Sirve para separar
+    un problema de credenciales de un problema del pipeline, sin escribir nada.
+    """
+    _configurar_registro()
+    esquema = entorno("SUPABASE_SCHEMA", "transp_gobcan")
+
+    try:
+        from .carga.supabase import conectar
+
+        with conectar() as conexion, conexion.cursor() as cursor:
+            cursor.execute("SELECT current_database(), current_user, version()")
+            base, usuario, version = cursor.fetchone()
+            cursor.execute(
+                "SELECT count(*) FROM information_schema.tables WHERE table_schema = %s", (esquema,)
+            )
+            (n_tablas,) = cursor.fetchone()
+            if not n_tablas:
+                consola.print(
+                    f"[red]Conecta, pero el schema {esquema!r} no existe.[/red] "
+                    "Aplica migraciones/001_crear_schema_transp_gobcan.sql."
+                )
+                raise typer.Exit(1)
+            cursor.execute(f"SELECT count(*) FROM {esquema}.entradas")
+            (n_entradas,) = cursor.fetchone()
+            cursor.execute(f"SELECT count(*) FROM {esquema}.logs_ejecucion")
+            (n_logs,) = cursor.fetchone()
+    except typer.Exit:
+        raise
+    except Exception as e:  # noqa: BLE001
+        consola.print(f"[red]No se ha podido conectar:[/red] {type(e).__name__}: {e}")
+        # Los tres fallos habituales dan errores que despistan: conviene
+        # nombrarlos, porque ninguno es lo que parece a primera vista.
+        mensaje = str(e).lower()
+        if "tenant" in mensaje or "not found" in mensaje:
+            consola.print(
+                "\n[yellow]No es la contraseña:[/yellow] el pooler no encuentra el proyecto. "
+                "Prueba el otro prefijo de host ([cyan]aws-1[/cyan] en vez de [cyan]aws-0[/cyan], "
+                "o al revés) y comprueba que el usuario sea "
+                "[cyan]postgres.<ref-del-proyecto>[/cyan], no [cyan]postgres[/cyan] a secas."
+            )
+        elif "nodename" in mensaje or "could not translate" in mensaje:
+            consola.print(
+                "\n[yellow]Es un problema de DNS, no de credenciales:[/yellow] estás usando la "
+                "conexión directa ([cyan]db.<ref>.supabase.co[/cyan]), que solo publica IPv6. "
+                "Usa la cadena del [cyan]Session pooler[/cyan]."
+            )
+        elif "password" in mensaje or "authentication" in mensaje:
+            consola.print(
+                "\nRevisa la contraseña de [cyan]DATABASE_URL[/cyan]: es la de la BASE DE DATOS, "
+                "no la de tu cuenta de Supabase. Se regenera en "
+                "Project Settings > Database > Reset database password."
+            )
+        raise typer.Exit(1) from e
+
+    consola.print(f"[green]Conexión correcta[/green] · {base} como {usuario}")
+    consola.print(f"  {version.split(',')[0]}")
+    consola.print(f"  schema [cyan]{esquema}[/cyan]: {n_entradas} entradas, {n_logs} ejecuciones")
+
+
 @app.command()
 def clasificar(
     recalcular: bool = typer.Option(False, help="Reaplica la capa semántica al histórico"),
