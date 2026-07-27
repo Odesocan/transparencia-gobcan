@@ -18,8 +18,19 @@
 # Ese detalle costó una versión entera del vocabulario, que dejaba fuera las 354
 # entradas sobre violencia de género publicadas desde mayo de 2023.
 #
-# Rendimiento medido sobre 1.000 entradas reales (27/04–27/07 de 2026):
-#   volumen bruto 11,0/día  ->  notificado 1,7/día  (16%)
+# Rendimiento medido sobre el histórico completo: 15.365 entradas cargadas
+# desde mayo de 2023, es decir tres años reales y no una extrapolación.
+#   media 1,90 alertas/día · percentil 95: 5 · pico máximo en 3 años: 10
+#   ni un solo día supera las 10, así que el digest no se satura
+#
+# Reparto por materia (1.950 alertas): sanidad 549, educacion 467, vivienda 384,
+# servicios_sociales 305, empleo 288, dependencia 116, migraciones 107,
+# violencia_genero 50, territorio_aguas 41, emergencia_social 2.
+#
+# PENDIENTE DE REVISIÓN: emergencia_social solo ha disparado 2 veces en tres
+# años. Sus términos ("pobreza energetica", "banco de alimentos", "exclusion
+# residencial") no parecen ser los que usa el gabinete. Mismo tipo de fallo que
+# el del plural en violencias machistas: hay que cotejarlo contra el corpus.
 
 version: 3
 fecha_revision: 2026-07-27
@@ -130,7 +141,8 @@ reglas:
     descripcion: "Un cabildo o ayuntamiento actúa sobre un ámbito que vigilamos."
 
 # ---------------------------------------------------------------------------
-# Envío. El volumen medido (1,7/día) permitiría correo por entrada, pero el
+# Envío. El volumen medido (1,90/día, pico de 10) permitiría correo por entrada,
+# pero el
 # digest evita que un día de Consejo de Gobierno sature la bandeja.
 # ---------------------------------------------------------------------------
 envio:

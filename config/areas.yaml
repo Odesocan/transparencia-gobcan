@@ -189,6 +189,13 @@ correspondencias_gobcan:
   - id: 161
     etiqueta_fuente: "Consejo de Gobierno (raíz)"
     area: consejo_gobierno
+  # Categoría raíz con 1.661 entradas. No es el 112 ni los avisos —esos se
+  # excluyen aparte, ids 44 y 24—, sino la actividad de la Dirección General
+  # de Emergencias, competencia de Presidencia, AAPP, Justicia y Seguridad.
+  # Sin esta entrada eran 359 entradas sin área en el histórico.
+  - id: 26
+    etiqueta_fuente: "Seguridad y Emergencias"
+    area: presidencia_aapp
 
 # ---------------------------------------------------------------------------
 # Categorías que NO son áreas. Son posiciones editoriales del portal: si se

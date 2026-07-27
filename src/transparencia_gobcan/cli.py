@@ -12,6 +12,7 @@ Cada subcomando corresponde a una operación completa y trazable.
 from __future__ import annotations
 
 import logging
+import pathlib
 import re
 from datetime import date, datetime, timedelta
 
@@ -75,6 +76,14 @@ def extraer(
         horas = int(entorno("VENTANA_INCREMENTAL_HORAS", "24"))
         inicio = _fecha(desde) or (datetime.now() - timedelta(hours=horas))
 
+    # Sin esto, dos ejecuciones solapadas duplican las peticiones a la fuente y
+    # compiten por el mismo UPSERT. Ya ocurrió una vez: dos cargas históricas
+    # con 27 segundos de diferencia, 30.000 peticiones donde bastaban 15.000.
+    # La idempotencia salvó los datos, pero el desperdicio es real y la fuente
+    # es pública: conviene no abusar. El workflow de Actions ya lo evita con
+    # `concurrency`; esto cubre la ejecución en local.
+    cerrojo = _tomar_cerrojo(simular)
+
     registro = abrir_registro(Fuente.GOBIERNO, modo)
     consola.print(
         f"[bold]Extrayendo[/bold] de gobcan · modo {modo} · desde {inicio:%Y-%m-%d %H:%M}"
@@ -113,6 +122,36 @@ def extraer(
             except Exception as e2:  # noqa: BLE001
                 consola.print(f"[red]Tampoco se pudo guardar el registro: {e2}[/red]")
         raise typer.Exit(1) from e
+    finally:
+        if cerrojo is not None:
+            cerrojo.close()
+
+
+def _tomar_cerrojo(simular: bool):
+    """Impide que dos extracciones corran a la vez.
+
+    Usa un bloqueo de fichero, que el sistema libera solo aunque el proceso
+    muera de mala manera: un fichero centinela normal dejaría el cerrojo puesto
+    para siempre tras un Ctrl-C. En simulación no hace falta, porque no escribe.
+    """
+    if simular:
+        return None
+
+    import fcntl
+    import tempfile
+
+    ruta = pathlib.Path(tempfile.gettempdir()) / "transparencia-gobcan.lock"
+    fichero = ruta.open("w")
+    try:
+        fcntl.flock(fichero, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        fichero.close()
+        consola.print(
+            "[red]Ya hay otra extracción en marcha.[/red] Espera a que termine, "
+            f"o borra {ruta} si estás seguro de que no queda ninguna."
+        )
+        raise typer.Exit(1) from None
+    return fichero
 
 
 def _resumen(entradas: list, registro, cargado: bool) -> None:

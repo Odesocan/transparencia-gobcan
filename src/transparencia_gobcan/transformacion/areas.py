@@ -47,6 +47,20 @@ def _indice() -> dict:
     }
 
 
+def _ascendientes(cid: int, catalogo: dict[int, dict] | None) -> list[int]:
+    """Devuelve la cadena de categorías padre, de la más cercana a la raíz.
+
+    Corta ante ciclos, que no deberían existir pero saldrían caros de depurar
+    si la fuente alguna vez los introduce.
+    """
+    cadena: list[int] = []
+    actual = (catalogo or {}).get(cid, {}).get("parent", 0)
+    while actual and actual not in cadena:
+        cadena.append(actual)
+        actual = (catalogo or {}).get(actual, {}).get("parent", 0)
+    return cadena
+
+
 def _vigente(correspondencia: dict, fecha: date) -> bool:
     """Comprueba si una correspondencia estaba vigente en la fecha dada."""
     desde = correspondencia.get("vigencia_desde")
@@ -84,6 +98,24 @@ def normalizar_area(
     candidatas = [
         c for c in idx["correspondencias"] if c["id"] in ids and _vigente(c, fecha)
     ]
+
+    # Si ninguna categoría corresponde directamente, se hereda del ascendiente.
+    # El portal cuelga los entes instrumentales de la consejería que los tutela
+    # —PROEXCA de Presidencia, el SUC de Sanidad, el Comisionado del REF de
+    # Hacienda—, y una entrada puede traer solo la categoría hija. Sin heredar,
+    # el 7,2% del histórico quedaba sin área pese a ser perfectamente
+    # clasificable.
+    if not candidatas:
+        for cid in ids:
+            for ancestro in _ascendientes(cid, catalogo):
+                heredadas = [
+                    c for c in idx["correspondencias"]
+                    if c["id"] == ancestro and _vigente(c, fecha)
+                ]
+                if heredadas:
+                    candidatas.extend(heredadas)
+                    break
+
     principal = AREA_RESIDUAL
     if candidatas:
         candidatas.sort(
