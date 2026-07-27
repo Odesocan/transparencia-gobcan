@@ -1,0 +1,142 @@
+# Capa semántica de alertas.
+#
+# No todas las entradas capturadas se notifican por correo. Solo interesan las
+# que contienen una decisión del ejecutivo o del legislativo sobre una iniciativa
+# política, y las que citan a entidades que seguimos de cerca.
+#
+# El modelo tiene tres ejes y una regla de disparo:
+#
+#   ACTO      ¿hay una decisión? (norma, acuerdo, trámite parlamentario, plan, recurso)
+#   MATERIA   ¿toca un ámbito de derechos sociales que vigilamos?
+#   ENTIDAD   ¿nos cita, o cita a una institución cuya actuación seguimos?
+#
+#   Se notifica si:  (ACTO y MATERIA)  o  (ENTIDAD propia)  o  (INSTITUCIÓN y MATERIA)
+#
+# Los patrones son expresiones regulares sobre el texto normalizado (minúsculas,
+# sin tildes). Se usan raíces con variantes de número y género porque la fuente
+# alterna singular y plural: publica "violencias machistas", no "violencia machista".
+# Ese detalle costó una versión entera del vocabulario, que dejaba fuera las 354
+# entradas sobre violencia de género publicadas desde mayo de 2023.
+#
+# Rendimiento medido sobre 1.000 entradas reales (27/04–27/07 de 2026):
+#   volumen bruto 11,0/día  ->  notificado 1,7/día  (16%)
+
+version: 3
+fecha_revision: 2026-07-27
+
+# ---------------------------------------------------------------------------
+# EJE A · Acto de decisión
+#
+# Los patrones se compilan con re.VERBOSE para poder escribirlos en varias
+# líneas. Eso implica que los espacios literales se IGNORAN: todo espacio con
+# significado va como `\s+`. Escribir "de genero" en vez de "de\s+genero" da un
+# patrón que compila sin error pero no encuentra nada, que es la peor clase de
+# fallo. La prueba tests/test_config.py lo vigila.
+# ---------------------------------------------------------------------------
+actos:
+  norma: >-
+    \b(decreto[\s-]?ley(es)?|decretos?|anteproyectos?\s+de\s+ley|
+    proyectos?\s+de\s+ley|proposicion(es)?\s+de\s+ley|leyes?|reglamentos?|
+    normativa)\b
+  acuerdo: >-
+    \b(acuerdo\s+de\s+gobierno|consejo\s+de\s+gobierno|aprueba|aprobo|
+    aprobad[oa]s?|aprobacion|da\s+luz\s+verde|autoriza|acuerda|ratifica)\b
+  parlamento: >-
+    \b(proposicion(es)?\s+no\s+de\s+ley|enmiendas?|mocion(es)?|
+    interpelacion(es)?|pleno\s+del\s+parlamento|toma\s+en\s+consideracion|
+    tramitacion\s+parlamentaria)\b
+  plan: >-
+    \b(plan(es)?\s+(estrategic[oa]s?|director(es)?)|estrategia|
+    hoja\s+de\s+ruta|pactos?|convenios?|protocolos?)\b
+  recurso: >-
+    \b(presupuestos?|convocatorias?|subvencion(es)?|licita(cion)?|
+    adjudica(cion)?|destina|invertira|contratos?|millones\s+de\s+euros|
+    partidas?)\b
+
+# ---------------------------------------------------------------------------
+# EJE B · Materia. Se corresponde con los ámbitos de vigilancia del observatorio.
+# ---------------------------------------------------------------------------
+materias:
+  vivienda: >-
+    \b(viviendas?|alquiler(es)?|vpo|desahucios?|infravivienda|
+    emergencia\s+habitacional|licencias?\s+urbanistica)\b
+  violencia_genero: >-
+    \b(violencias?\s+(de\s+genero|machistas?|sexual(es)?|vicaria)|maltrato|
+    agresion(es)?\s+sexual(es)?|victimas?\s+de\s+violencia|feminicidios?|
+    perspectiva\s+de\s+genero|igualdad\s+de\s+genero)\b
+  sanidad: >-
+    \b(sanidad|sanitari[oa]s?|hospital(es|ari[oa]s?)?|atencion\s+primaria|
+    listas?\s+de\s+espera|salud\s+mental|urgencias|consultorios?)\b
+  educacion: >-
+    \b(educacion|educativ[oa]s?|escolar(es)?|profesorado|universidad(es)?|
+    formacion\s+profesional|comedor(es)?\s+escolar(es)?|becas?|alumnado)\b
+  servicios_sociales: >-
+    \b(servicios\s+sociales|dependencia|discapacidad|personas\s+mayores|
+    menores|infancia|renta\s+canaria\s+de\s+ciudadania|exclusion\s+social|
+    pobreza|tercer\s+sector)\b
+  empleo: >-
+    \b(empleo|desempleo|convenios?\s+colectiv[oa]s?|salari[oa]s?|
+    personas\s+trabajadoras|huelgas?|siniestralidad\s+laboral)\b
+  migraciones: >-
+    \b(migracion(es)?|migrantes|migratori[oa]s?|menores\s+no\s+acompanados|
+    acogida|asilo|refugiad[oa]s?)\b
+  dependencia: >-
+    \b(dependencia|cuidados|teleasistencia|centros?\s+de\s+dia|
+    residencias?\s+de\s+mayores|sociosanitari[oa]s?)\b
+  territorio_aguas: >-
+    \b(sequia|depuradora|desaladora|ordenacion\s+del\s+territorio|
+    ciclo\s+del\s+agua|emergencia\s+hidrica)\b
+  emergencia_social: >-
+    \b(pobreza\s+energetica|banco\s+de\s+alimentos|ayudas?\s+de\s+emergencia|
+    exclusion\s+residencial)\b
+
+# ---------------------------------------------------------------------------
+# EJE C · Entidades.
+#
+# Distinción importante, aprendida midiendo: un municipio en el texto suele ser
+# el LUGAR donde ocurre algo, no la institución que decide. Cotejar el topónimo
+# a secas disparaba 154 alertas de 292, casi todas falsas ("desvíos en la FV-20
+# ... Puerto del Rosario"). Por eso los cabildos y ayuntamientos solo cuentan
+# cuando aparecen como institución actuante, y aun así necesitan una materia.
+# ---------------------------------------------------------------------------
+entidades:
+  # Mención propia o de entidades del tercer sector con las que trabajamos.
+  # Estas SÍ disparan alerta por sí solas.
+  propias: >-
+    \b(odesocan|observatorio\s+de\s+derechos\s+sociales|acufade|affa)\b
+
+  # Instituciones actuantes. Requieren materia para disparar.
+  cabildos: >-
+    cabildos?\s+(insular(es)?\s+)?(de\s+|del\s+)?(tenerife|gran\s+canaria|
+    lanzarote|fuerteventura|la\s+palma|la\s+gomera|el\s+hierro)
+  ayuntamientos: >-
+    ayuntamientos?\s+(de\s+|del\s+)?[a-z]
+
+# ---------------------------------------------------------------------------
+# Reglas de disparo. Se evalúan en orden; la primera que se cumple fija el motivo.
+# ---------------------------------------------------------------------------
+reglas:
+  - motivo: entidad_propia
+    condicion: "entidades.propias"
+    prioridad: alta
+    descripcion: "Nos cita a nosotras o a ACUFADE / AFFA."
+  - motivo: decision_con_materia
+    condicion: "actos AND materias"
+    prioridad: alta
+    descripcion: "Decisión ejecutiva o legislativa sobre un ámbito que vigilamos."
+  - motivo: institucion_con_materia
+    condicion: "(entidades.cabildos OR entidades.ayuntamientos) AND materias"
+    prioridad: media
+    descripcion: "Un cabildo o ayuntamiento actúa sobre un ámbito que vigilamos."
+
+# ---------------------------------------------------------------------------
+# Envío. El volumen medido (1,7/día) permitiría correo por entrada, pero el
+# digest evita que un día de Consejo de Gobierno sature la bandeja.
+# ---------------------------------------------------------------------------
+envio:
+  modo: digest
+  franjas: ["09:00", "14:00", "20:00"]
+  zona_horaria: "Atlantic/Canary"
+  # Las alertas de prioridad alta con mención propia se envían al momento.
+  inmediato_si_motivo: [entidad_propia]
+  maximo_por_envio: 25

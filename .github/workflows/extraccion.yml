@@ -1,0 +1,63 @@
+# Automatización del pipeline.
+#
+# Sobre la cadencia: la guía pedía ejecución "en tiempo real". GitHub Actions
+# solo ofrece cron, con un mínimo de 5 minutos y retrasos rutinarios de 5 a 15
+# en la práctica, porque los trabajos programados tienen la prioridad más baja
+# de la cola. Un cron de 5 minutos no da 5 minutos de latencia: da latencia
+# impredecible y 288 ejecuciones diarias casi todas vacías.
+#
+# El dato que decide es que el portal publica en horario de oficina: el 86% de
+# las entradas aparece entre las 09:00 y las 15:00 hora canaria, con el máximo
+# a las 13:00. Fuera de esa franja, casi ninguna ejecución encuentra nada.
+#
+# NOTA: las expresiones cron de GitHub Actions van en UTC. Canarias es UTC+1 en
+# horario de verano, así que la franja 08:00-20:00 local se expresa como 07-19.
+
+name: Extracción transparencia-gobcan
+
+on:
+  schedule:
+    - cron: "*/30 7-19 * * 1-5"   # cada 30 min en franja laboral (hora canaria)
+    - cron: "0 21 * * *"          # cierre diario a las 22:00 hora canaria
+  workflow_dispatch:              # ejecución manual desde la interfaz de GitHub
+    inputs:
+      modo:
+        description: "Modo de ejecución"
+        type: choice
+        options: [incremental, historico]
+        default: incremental
+
+permissions:
+  contents: read
+
+concurrency:
+  # Evita que dos ejecuciones solapadas compitan por el mismo UPSERT.
+  group: extraccion-gobcan
+  cancel-in-progress: false
+
+jobs:
+  extraer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias
+        # El extra `respaldo` (Playwright) no se instala: la fuente principal es
+        # una API REST y no hace falta navegador en la ejecución normal.
+        run: pip install -e .
+
+      - name: Comprobar la configuración antes de tocar datos
+        run: transparencia validar-config
+
+      - name: Extraer
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ENTORNO: produccion
+        run: transparencia extraer --fuente gobcan --modo "${{ inputs.modo || 'incremental' }}"

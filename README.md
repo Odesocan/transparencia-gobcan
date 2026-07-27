@@ -1,0 +1,185 @@
+# transparencia-gobcan
+
+Herramienta interna del equipo técnico de **ODESOCAN · Observatorio de Derechos Sociales
+de Canarias** para detectar y registrar de forma continuada la actividad ejecutiva y
+parlamentaria del Gobierno de Canarias y del Parlamento de Canarias.
+
+Sustituye el descubrimiento informal, irregular y parcial por una detección trazada y
+actualizada, que alimenta el trabajo de fiscalización del observatorio.
+
+---
+
+## Qué hace y qué no hace
+
+Captura las publicaciones de las dos fuentes, las normaliza contra un vocabulario cerrado
+de áreas, deriva su ámbito territorial, valida la calidad de cada fila y carga el resultado
+en Supabase. Sobre lo cargado aplica una capa semántica que decide qué merece notificarse
+por correo.
+
+**Almacena** título, entradilla de dos o tres líneas, metadatos y enlace.
+**No almacena** el cuerpo completo de la noticia.
+
+> Una precisión que conviene tener presente al leer los datos: las dos fuentes son portales
+> de **comunicación institucional**, no portales de transparencia. Publican lo que cada
+> gabinete decide contar, con el enfoque con que decide contarlo. La herramienta detecta
+> actividad *comunicada*, no actividad ejecutiva completa. Que una medida no aparezca aquí
+> no significa que no exista.
+
+---
+
+## Fuentes
+
+| Fuente | Método | Volumen real | Estado |
+|---|---|---|---|
+| [Portal de Noticias del Gobierno de Canarias](https://www3.gobiernodecanarias.org/noticias/) | API REST de WordPress | ~15,6 entradas/día | Activa |
+| [Consulta de iniciativas del Parlamento](https://www.parcan.es/iniciativas/) | Formulario POST + ficha de trámites | ~0,6 decisiones/día | Pendiente |
+| [Noticias del Parlamento](https://www.parcan.es/noticias/) | HTML por año y mes | ~0,4 entradas/día | Secundaria |
+
+El portal del Gobierno **no requiere scraping**: es una instalación de WordPress que expone
+su API REST pública sin autenticación, con 41.223 entradas históricas, filtrado por fecha y
+consejería y captura incremental mediante `modified_after`. Playwright queda como plan B
+documentado en `src/transparencia_gobcan/extraccion/gobcan_html.py`, por si la API se cierra.
+
+Para la actividad legislativa se usa el buscador de iniciativas, no el portal de noticias:
+de 231 noticias analizadas del Parlamento en 19 meses, solo 3 citaban un grupo parlamentario.
+El detalle está en [`docs/puntos-de-rotura.md`](docs/puntos-de-rotura.md).
+
+Ambas fuentes son públicas. Se respetan sus `robots.txt`: en Parcan, `Crawl-delay: 3` y la
+prohibición de sus endpoints `/api/`.
+
+---
+
+## Frecuencia de actualización
+
+Cada **30 minutos entre las 08:00 y las 20:00 de lunes a viernes**, más una pasada de cierre
+a las 22:00 (hora canaria).
+
+No es "tiempo real", y es deliberado. GitHub Actions solo ofrece `cron`, con un mínimo de
+5 minutos y retrasos rutinarios de 5 a 15 en la práctica porque los trabajos programados
+tienen la prioridad más baja de la cola. Además, el portal publica en horario de oficina:
+el 86% de las entradas aparece entre las 09:00 y las 15:00, con el máximo a las 13:00. Un
+cron de 5 minutos daría 288 ejecuciones diarias casi todas vacías y una latencia
+impredecible; esta cadencia da unas 25 ejecuciones y latencia máxima de 30 minutos en la
+franja en que realmente se publica algo.
+
+La carga histórica arranca en **mayo de 2023**, inicio de la XI legislatura y del propio
+observatorio.
+
+---
+
+## Estructura
+
+```
+config/                 Vocabularios y parámetros versionados (no hay constantes en el código)
+  areas.yaml              Áreas, correspondencias por legislatura y grupos parlamentarios
+  alertas.yaml            Capa semántica: actos, materias y entidades
+  territorio.yaml         Las 8 islas y los 88 municipios
+  fuentes.yaml            Endpoints, selectores, cadencia y condiciones de uso
+src/transparencia_gobcan/
+  extraccion/             Obtención de datos crudos
+  transformacion/         Normalización, derivación y validación
+  carga/                  Escritura en Supabase y registro de ejecuciones
+  alertas/                Clasificación semántica
+  modelos.py              Modelo de datos (pydantic)
+  cli.py                  Punto de entrada único
+migraciones/            SQL versionado del schema transp_gobcan
+tests/                  Pruebas, con fixtures capturados de las fuentes reales
+visualizacion/          Capa D3.js (pendiente)
+docs/                   Reconocimiento de fuentes y puntos de rotura
+```
+
+La separación entre extracción, transformación, carga y visualización es explícita: cada
+capa se puede sustituir sin tocar las demás. Si la API de Gobcan se cierra, solo cambia
+`extraccion/`.
+
+---
+
+## Modelo de datos
+
+Schema `transp_gobcan` en Supabase, con dos tablas desnormalizadas para consumo directo
+desde la interfaz:
+
+- **`entradas`** — una fila por publicación. `hash_dedup` es la clave de conflicto del
+  `UPSERT`, lo que hace el pipeline idempotente: reejecutarlo actualiza, nunca duplica.
+- **`logs_ejecucion`** — una fila por ejecución. Guarda el **motivo** de cada descarte y
+  las anomalías detectadas, no solo el recuento de filas: la tabla existe para aprender de
+  los fallos del extractor.
+
+Tres campos merecen explicación porque no son evidentes:
+
+- `area` **nunca es nulo**. Hay un valor residual explícito (`sin_asignar`) porque el 14%
+  de las entradas útiles no trae consejería, y un `NULL` silencioso las dejaría invisibles
+  ante cualquier filtro.
+- `territorio_origen` distingue un territorio publicado por la fuente de una inferencia
+  nuestra sobre el texto. Una inferencia no puede presentarse como si fuera un dato.
+- `entrada_origen` registra de qué nivel de la cascada salió la entradilla. Su distribución
+  avisa de que el gabinete ha cambiado de práctica editorial antes de que se note en los datos.
+
+La nomenclatura de áreas sigue la de las secciones presupuestarias / consejerías, la misma
+que la herramienta de cargos políticos (`cargos_publicos.cp_altos_cargos.area`). No se usa
+clasificación libre: el vocabulario está cerrado en `config/areas.yaml`, con vigencia
+temporal, porque la fuente cambia de nomenclatura cada legislatura.
+
+---
+
+## Puesta en marcha
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+cp .env.example .env    # y rellenar las credenciales
+```
+
+Las credenciales de Supabase y de correo van en `.env` en local y en GitHub Secrets en
+producción. **Nunca en el repositorio.**
+
+El plan B con navegador solo se instala si hace falta:
+
+```bash
+pip install -e ".[respaldo]" && playwright install chromium
+```
+
+---
+
+## Ejecución
+
+```bash
+transparencia validar-config                          # coherencia de los vocabularios
+transparencia extraer --modo incremental              # pasada normal
+transparencia extraer --modo historico --desde 2023-05-01
+transparencia extraer --simular                       # extrae y valida, sin cargar
+transparencia clasificar --recalcular                 # tras ampliar config/alertas.yaml
+```
+
+Pruebas:
+
+```bash
+pytest
+```
+
+Los fixtures son respuestas reales capturadas de las fuentes, no datos inventados, para que
+las pruebas cubran las rarezas que las fuentes tienen de verdad.
+
+---
+
+## Mantenimiento
+
+El pipeline se rompe cuando la fuente cambia, y la fuente cambia. Lo previsible está
+documentado en [`docs/puntos-de-rotura.md`](docs/puntos-de-rotura.md).
+
+Las señales de que el extractor se está degradando **sin fallar** se vigilan desde la tabla
+de logs: caída del porcentaje de entradillas obtenidas del sumario, subida de las entradas
+con área `sin_asignar`, volumen diario muy por debajo de las ~15 entradas esperadas, o
+categorías nuevas sin correspondencia en la configuración. Un extractor roto rara vez lanza
+una excepción: sigue devolviendo filas, solo que peores.
+
+---
+
+## Licencia y créditos
+
+ODESOCAN · Observatorio de Derechos Sociales de Canarias
+Calle los Dragos, 45, 3ª planta · 35118 Agüimes, Las Palmas
+[info@odesocan.org](mailto:info@odesocan.org)
+
+Código bajo GPL-3.0-or-later. Los datos proceden de fuentes públicas de la Administración
+autonómica y conservan su carácter público.

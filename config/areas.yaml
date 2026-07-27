@@ -1,0 +1,223 @@
+# Vocabulario cerrado de áreas y tabla de correspondencias con las fuentes.
+#
+# La nomenclatura normalizada es la de las secciones presupuestarias / consejerías,
+# la misma que usa la herramienta de cargos políticos (schema `cargos_publicos`,
+# tabla `cp_altos_cargos`, campo `area`). No inventamos categorías propias: si una
+# consejería cambia de nombre, se añade aquí una entrada con su vigencia y se
+# conserva la anterior, de modo que la serie histórica no se parta.
+#
+# Verificado el 27/07/2026 contra:
+#   - cargos_publicos.cp_altos_cargos  (13 valores distintos de `area`)
+#   - /noticias/wp-json/wp/v2/categories  (168 categorías del portal de Gobcan)
+
+version: 1
+fecha_revision: 2026-07-27
+
+# ---------------------------------------------------------------------------
+# Vocabulario normalizado. `clave` es lo que se persiste en la columna `area`.
+# ---------------------------------------------------------------------------
+areas:
+  - clave: sanidad
+    nombre: "Consejería de Sanidad"
+    tipo: consejeria
+  - clave: educacion
+    nombre: "Consejería de Educación, Formación Profesional, Actividad Física y Deportes"
+    tipo: consejeria
+  - clave: universidades
+    nombre: "Consejería de Universidades, Ciencia e Innovación y Cultura"
+    tipo: consejeria
+  - clave: obras_publicas
+    nombre: "Consejería de Obras Públicas, Vivienda y Movilidad"
+    tipo: consejeria
+  - clave: bienestar_social
+    nombre: "Consejería de Bienestar Social, Igualdad, Juventud, Infancia y Familias"
+    tipo: consejeria
+  - clave: presidencia_aapp
+    nombre: "Consejería de Presidencia, Administraciones Públicas, Justicia y Seguridad"
+    tipo: consejeria
+  - clave: transicion_ecologica
+    nombre: "Consejería de Transición Ecológica y Energía"
+    tipo: consejeria
+  - clave: agricultura
+    nombre: "Consejería de Agricultura, Ganadería, Pesca y Soberanía Alimentaria"
+    tipo: consejeria
+  - clave: turismo_empleo
+    nombre: "Consejería de Turismo y Empleo"
+    tipo: consejeria
+  - clave: hacienda
+    nombre: "Consejería de Hacienda y Relaciones con la Unión Europea"
+    tipo: consejeria
+  - clave: economia
+    nombre: "Consejería de Economía, Industria, Comercio y Autónomos"
+    tipo: consejeria
+  - clave: politica_territorial
+    nombre: "Consejería de Política Territorial, Cohesión Territorial y Aguas"
+    tipo: consejeria
+  - clave: presidencia_gobierno
+    nombre: "Presidencia del Gobierno"
+    tipo: presidencia
+
+  # Entradas que no son consejerías pero necesitan valor propio: sin ellas, el
+  # 14% de las entradas útiles quedaría con área nula y sería invisible al filtrar.
+  - clave: consejo_gobierno
+    nombre: "Consejo de Gobierno"
+    tipo: organo
+  - clave: entes_instrumentales
+    nombre: "Entes instrumentales y organismos adscritos"
+    tipo: organo
+    nota: "PROEXCA, Servicio de Urgencias Canario, Comisionado del REF y similares."
+  - clave: sin_asignar
+    nombre: "Sin área asignada en origen"
+    tipo: residual
+    nota: "Valor explícito, nunca NULL. Su recuento se vigila en la tabla de logs."
+
+# ---------------------------------------------------------------------------
+# Correspondencias con el portal de noticias del Gobierno de Canarias.
+# `id` es el identificador de categoría de la API de WordPress.
+# `vigencia_*` acota el periodo en que esa categoría es la vigente; se conserva
+# la nomenclatura anterior porque las entradas de mayo-julio de 2023 aún la usan.
+# ---------------------------------------------------------------------------
+correspondencias_gobcan:
+
+  # --- XI legislatura (gobierno constituido en julio de 2023) ---
+  - id: 15300
+    etiqueta_fuente: "Sanidad"
+    area: sanidad
+    vigencia_desde: 2023-07-01
+  - id: 15272
+    etiqueta_fuente: "Educación, Formación Profesional, Actividad Física y Deportes"
+    area: educacion
+    vigencia_desde: 2023-07-01
+  - id: 15288
+    etiqueta_fuente: "Universidades, Ciencia e Innovación y Cultura"
+    area: universidades
+    vigencia_desde: 2023-07-01
+  - id: 15256
+    etiqueta_fuente: "Obras Públicas, Vivienda y Movilidad"
+    area: obras_publicas
+    vigencia_desde: 2023-07-01
+  - id: 15295
+    etiqueta_fuente: "Bienestar Social, Igualdad, Juventud, Infancia y Familias"
+    area: bienestar_social
+    vigencia_desde: 2023-07-01
+  - id: 15265
+    etiqueta_fuente: "Presidencia, Administraciones Públicas, Justicia y Seguridad"
+    area: presidencia_aapp
+    vigencia_desde: 2023-07-01
+  - id: 15292
+    etiqueta_fuente: "Transición Ecológica y Energía"
+    area: transicion_ecologica
+    vigencia_desde: 2023-07-01
+  - id: 15307
+    etiqueta_fuente: "Agricultura, Ganadería, Pesca y Soberanía Alimentaria"
+    area: agricultura
+    vigencia_desde: 2023-07-01
+  - id: 15285
+    etiqueta_fuente: "Turismo y Empleo"
+    area: turismo_empleo
+    vigencia_desde: 2023-07-01
+  - id: 15261
+    etiqueta_fuente: "Hacienda y Relaciones con la Unión Europea"
+    area: hacienda
+    vigencia_desde: 2023-07-01
+  - id: 15251
+    etiqueta_fuente: "Economía, Industria, Comercio y Autónomos"
+    area: economia
+    vigencia_desde: 2023-07-01
+  - id: 15277
+    etiqueta_fuente: "Política Territorial, Cohesión Territorial y Aguas"
+    area: politica_territorial
+    vigencia_desde: 2023-07-01
+  - id: 15312
+    etiqueta_fuente: "Consejo de Gobierno"
+    area: consejo_gobierno
+    vigencia_desde: 2023-07-01
+
+  # --- X legislatura: se conserva para las entradas de mayo-julio de 2023 ---
+  - id: 4985
+    etiqueta_fuente: "Educación, Universidades, Cultura y Deportes"
+    area: educacion
+    vigencia_hasta: 2023-07-31
+  - id: 4984
+    etiqueta_fuente: "Derechos Sociales, Igualdad, Diversidad y Juventud"
+    area: bienestar_social
+    vigencia_hasta: 2023-07-31
+  - id: 4989
+    etiqueta_fuente: "Obras Públicas, Transportes y Vivienda"
+    area: obras_publicas
+    vigencia_hasta: 2023-07-31
+  - id: 4990
+    etiqueta_fuente: "Transición Ecológica, Lucha contra el Cambio Climático y Planificación Territorial"
+    area: transicion_ecologica
+    vigencia_hasta: 2023-07-31
+  - id: 4987
+    etiqueta_fuente: "Agricultura, Ganadería y Pesca"
+    area: agricultura
+    vigencia_hasta: 2023-07-31
+  - id: 4988
+    etiqueta_fuente: "Turismo, Industria y Comercio"
+    area: turismo_empleo
+    vigencia_hasta: 2023-07-31
+  - id: 4986
+    etiqueta_fuente: "Economía, Conocimiento y Empleo"
+    area: economia
+    vigencia_hasta: 2023-07-31
+  - id: 4982
+    etiqueta_fuente: "Hacienda, Presupuestos y Asuntos Europeos"
+    area: hacienda
+    vigencia_hasta: 2023-07-31
+  - id: 4983
+    etiqueta_fuente: "Administraciones Públicas y Justicia"
+    area: presidencia_aapp
+    vigencia_hasta: 2023-07-31
+
+  # --- Categorías raíz sin cambio de legislatura ---
+  - id: 22
+    etiqueta_fuente: "Sanidad (raíz)"
+    area: sanidad
+  - id: 9
+    etiqueta_fuente: "Presidencia"
+    area: presidencia_gobierno
+  - id: 161
+    etiqueta_fuente: "Consejo de Gobierno (raíz)"
+    area: consejo_gobierno
+
+# ---------------------------------------------------------------------------
+# Categorías que NO son áreas. Son posiciones editoriales del portal: si se
+# tratan como área, contaminan cualquier agregación (Portada tiene 20.220
+# entradas, más que cualquier consejería).
+# ---------------------------------------------------------------------------
+categorias_no_area:
+  - {id: 14,  etiqueta: "Portada"}
+  - {id: 164, etiqueta: "Lanzadera"}
+  - {id: 163, etiqueta: "Destacados"}
+  - {id: 125, etiqueta: "Consejerías"}   # categoría contenedora, no consejería
+  - {id: 1,   etiqueta: "Sin categoría"}
+  - {id: 165, etiqueta: "Día de Canarias"}
+
+# ---------------------------------------------------------------------------
+# Exclusiones en origen. Se pasan a la API como `categories_exclude`.
+# El recuento de descartes se registra en la tabla de logs con este motivo,
+# para poder revisar la decisión sin releer el histórico.
+# ---------------------------------------------------------------------------
+categorias_excluidas:
+  - id: 44
+    etiqueta: "Incidentes 112"
+    motivo: "Partes de sucesos del 112: no son actividad ejecutiva."
+  - id: 24
+    etiqueta: "Alertas"
+    motivo: "Avisos y prealertas meteorológicas: no son actividad ejecutiva."
+
+# ---------------------------------------------------------------------------
+# Grupos parlamentarios de la XI legislatura. Nomenclatura tomada de
+# cargos_publicos.cp_parlamento_diputados.grupo_parlamentario, que coincide
+# literalmente con la que usa Parcan en la ficha de trámites de cada iniciativa.
+# ---------------------------------------------------------------------------
+grupos_parlamentarios:
+  - {clave: gp_socialista,   nombre: "GP Socialista Canario",                       escanos: 25}
+  - {clave: gp_nacionalista, nombre: "GP Nacionalista Canario (CCa)",               escanos: 23}
+  - {clave: gp_popular,      nombre: "GP Popular",                                  escanos: 18}
+  - {clave: gp_nueva_canarias, nombre: "GP Nueva Canarias-Bloque Canarista (NC-bc)", escanos: 5}
+  - {clave: gp_vox,          nombre: "GP VOX",                                      escanos: 4}
+  - {clave: gp_asg,          nombre: "GP Agrupación Socialista Gomera (ASG)",       escanos: 3}
+  - {clave: gp_mixto,        nombre: "GP Mixto",                                    escanos: 1}

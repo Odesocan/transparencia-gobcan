@@ -1,0 +1,122 @@
+# Configuración de las fuentes de captación.
+#
+# Cada fuente declara su método de extracción, su cadencia y sus condiciones de
+# uso. El extractor lee de aquí y no de constantes repartidas por el código: si
+# la fuente cambia, se toca este fichero y queda registrado en el historial de Git.
+
+version: 1
+fecha_revision: 2026-07-27
+
+fuentes:
+
+  # =========================================================================
+  gobcan:
+    nombre: "Portal de Noticias del Gobierno de Canarias"
+    url_base: "https://www3.gobiernodecanarias.org/noticias/"
+    tipo: ejecutivo
+    activa: true
+
+    # El portal es WordPress y expone su API REST pública sin autenticación.
+    # Por eso el método principal no es scraping: una petición HTTP basta.
+    metodo_principal: api_rest
+    api:
+      endpoint_posts: "https://www3.gobiernodecanarias.org/noticias/wp-json/wp/v2/posts"
+      endpoint_categorias: "https://www3.gobiernodecanarias.org/noticias/wp-json/wp/v2/categories"
+      por_pagina: 100          # máximo que admite WordPress
+      # Campos que pedimos. `content` se descarga para extraer la entradilla del
+      # blockquote, pero NO se persiste: se procesa en memoria y se descarta.
+      campos: [id, date, date_gmt, modified, link, slug, title, excerpt, content, categories, tags]
+      # Captura incremental. `modified_after` recoge también las entradas
+      # editadas después de publicarse, no solo las nuevas.
+      parametro_incremental: modified_after
+      tiempo_espera_s: 60
+      reintentos: 3
+      espera_entre_reintentos_s: 5
+
+    # Plan B, activable si la API deja de responder o se cierra.
+    metodo_respaldo: html
+    html:
+      patron_categoria: "https://www3.gobiernodecanarias.org/noticias/category/consejerias/{slug}/"
+      patron_pagina: "page/{n}/"
+      por_pagina: 10
+      # Selectores verificados el 27/07/2026. Ver docs/puntos-de-rotura.md:
+      # varios cambian de comportamiento entre la portada y la vista de categoría.
+      selectores:
+        articulo: "article"
+        titulo: ".article-title"
+        enlace: ".article-title a"   # NO usar "article a": apunta a la categoría
+        fecha: ".article-date"       # solo se pinta en la primera entrada de cada grupo
+        entradilla: ".article-excerpt"  # solo existe en la portada
+        categorias: ".article-cat"
+
+    carga_historica_desde: 2023-05-01   # inicio de la XI legislatura
+    cadencia:
+      tipo: cron
+      # El 86% de las entradas se publica entre las 09:00 y las 15:00 hora canaria.
+      # Un cron de 5 minutos daría 288 ejecuciones diarias casi todas vacías,
+      # y GitHub Actions retrasa de forma rutinaria los intervalos cortos.
+      expresion: "*/30 8-20 * * 1-5"
+      cierre_diario: "0 22 * * *"
+      zona_horaria: "Atlantic/Canary"
+
+    condiciones_uso:
+      robots_txt: "https://www3.gobiernodecanarias.org/robots.txt"
+      # robots.txt solo restringe PDFs y números concretos del BOC. /noticias/ libre.
+      crawl_delay_s: 0
+      limite_tasa_detectado: false   # 12 peticiones seguidas sin degradación
+      nota: "Fuente pública. Se declara agente identificable en la cabecera User-Agent."
+
+  # =========================================================================
+  parcan_iniciativas:
+    nombre: "Consulta de iniciativas del Parlamento de Canarias"
+    url_base: "https://www.parcan.es/iniciativas/"
+    tipo: legislativo
+    activa: false   # fuera del alcance de la sesión actual; pendiente de Hito propio
+
+    # Sustituye a /noticias/ como fuente de actividad legislativa: el portal de
+    # noticias es comunicación institucional de la Cámara y solo el 1,3% de sus
+    # entradas cita un grupo parlamentario. Aquí el proponente es un campo.
+    metodo_principal: formulario_post
+    formulario:
+      endpoint: "https://www.parcan.es/iniciativas/index.py"
+      metodo: POST
+      campos: {LEGIS: "11", TIPO: "", EXTRACTO: "", PROPONENTE: "", SITUACION: "*", rango: ""}
+      # El listado marca cada resultado con comentarios HTML explícitos,
+      # que son un ancla más estable que las clases CSS.
+      delimitador_resultado: "<!-- RESULT ITEM START -->"
+      # La ficha con proponente, situación y cronología de trámites.
+      endpoint_ficha: "https://www.parcan.es/iniciativas/tramites.py?id_iniciativa={codigo}"
+
+    # Dos anillos, para no pagar 4.900 peticiones por el control ordinario.
+    tipos_anillo_decisiones: [PL, PPL, DL, DLG, PNLP, PNLC, M, CG]   # ~679 en la XI
+    tipos_anillo_control:    [I, "C/P", "C/C"]                        # ~2.021 en la XI
+    tipos_fuera_de_alcance:  ["PO/P", PE]                             # ~4.927, control ordinario
+
+    carga_historica_desde: 2023-05-01
+    condiciones_uso:
+      robots_txt: "https://www.parcan.es/robots.txt"
+      crawl_delay_s: 3          # declarado en su robots.txt: se respeta
+      rutas_prohibidas: ["/api/", "/api2/", "/art/", "/registro/"]
+      nota: "robots.txt prohíbe sus endpoints /api/. No se usan."
+
+  # =========================================================================
+  parcan_noticias:
+    nombre: "Portal de noticias del Parlamento de Canarias"
+    url_base: "https://www.parcan.es/noticias/"
+    tipo: institucional
+    activa: false
+
+    # Se conserva como fuente secundaria de actos institucionales de la Cámara.
+    # No sirve para seguimiento legislativo: ver docs/puntos-de-rotura.md.
+    metodo_principal: html
+    html:
+      patron_mes: "https://www.parcan.es/noticias/{anio}/{mes}/"   # sin paginación interna
+      selectores:
+        articulo: 'section[aria-labelledby^="noticia-"]'
+        titulo: "p.media-heading a"
+        fecha: "p.fecha-noticia"        # formato "24/jul/2026": mes abreviado en español
+        entradilla: "div.media-body > p"
+        enlace: "p.media-heading a"
+    volumen_estimado_dia: 0.4
+    condiciones_uso:
+      crawl_delay_s: 3

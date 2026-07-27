@@ -1,0 +1,1178 @@
+[
+ {
+  "id": 14,
+  "count": 20220,
+  "name": "Portada",
+  "slug": "portada",
+  "parent": 0
+ },
+ {
+  "id": 164,
+  "count": 17726,
+  "name": "Lanzadera",
+  "slug": "lanzadera",
+  "parent": 0
+ },
+ {
+  "id": 125,
+  "count": 7914,
+  "name": "Consejerías",
+  "slug": "consejerias",
+  "parent": 0
+ },
+ {
+  "id": 44,
+  "count": 7861,
+  "name": "Incidentes 112",
+  "slug": "incidente-112",
+  "parent": 26
+ },
+ {
+  "id": 22,
+  "count": 7532,
+  "name": "Sanidad",
+  "slug": "consejeria-sanidad",
+  "parent": 0
+ },
+ {
+  "id": 163,
+  "count": 6288,
+  "name": "Destacados",
+  "slug": "destacados",
+  "parent": 0
+ },
+ {
+  "id": 72,
+  "count": 5428,
+  "name": "Actualidad sanitaria",
+  "slug": "actualidad-sanitaria",
+  "parent": 22
+ },
+ {
+  "id": 9,
+  "count": 4981,
+  "name": "Presidencia",
+  "slug": "presidencia",
+  "parent": 0
+ },
+ {
+  "id": 69,
+  "count": 3821,
+  "name": "Actividad Asistencial",
+  "slug": "actividad-asistencial",
+  "parent": 22
+ },
+ {
+  "id": 15300,
+  "count": 3510,
+  "name": "Sanidad",
+  "slug": "sanidad",
+  "parent": 125
+ },
+ {
+  "id": 21,
+  "count": 2918,
+  "name": "Hospitales",
+  "slug": "hospitales",
+  "parent": 22
+ },
+ {
+  "id": 161,
+  "count": 2681,
+  "name": "Consejo de Gobierno",
+  "slug": "consejo-de-gobierno",
+  "parent": 0
+ },
+ {
+  "id": 29,
+  "count": 2557,
+  "name": "Acuerdos de Gobierno",
+  "slug": "acuerdos",
+  "parent": 161
+ },
+ {
+  "id": 15303,
+  "count": 2126,
+  "name": "Actualidad Sanitaria",
+  "slug": "actualidad-sanitaria-sanidad",
+  "parent": 15300
+ },
+ {
+  "id": 73,
+  "count": 2104,
+  "name": "Salud Pública",
+  "slug": "salud-publica",
+  "parent": 22
+ },
+ {
+  "id": 23,
+  "count": 1907,
+  "name": "Hemodonación",
+  "slug": "hemodonacion",
+  "parent": 22
+ },
+ {
+  "id": 4985,
+  "count": 1763,
+  "name": "Educación, Universidades, Cultura y Deportes",
+  "slug": "consejeria-educacion-universidades-cultura-y-deportes",
+  "parent": 0
+ },
+ {
+  "id": 26,
+  "count": 1661,
+  "name": "Seguridad y Emergencias",
+  "slug": "consejeria-seguridad-y-emergencias",
+  "parent": 0
+ },
+ {
+  "id": 5,
+  "count": 1559,
+  "name": "Cultura",
+  "slug": "cultura",
+  "parent": 4985
+ },
+ {
+  "id": 15272,
+  "count": 1549,
+  "name": "Educación, Formación Profesional, Actividad Física y Deportes",
+  "slug": "educacion-formacion-profesional-actividad-fisica-y-deportes",
+  "parent": 125
+ },
+ {
+  "id": 15306,
+  "count": 1320,
+  "name": "Hospitales",
+  "slug": "hospitales-sanidad",
+  "parent": 15300
+ },
+ {
+  "id": 15304,
+  "count": 1275,
+  "name": "Actividad Asistencial",
+  "slug": "actividad-asistencial-sanidad",
+  "parent": 15300
+ },
+ {
+  "id": 15288,
+  "count": 1260,
+  "name": "Universidades, Ciencia e Innovación y Cultura",
+  "slug": "universidades-ciencia-e-innovacion-y-cultura",
+  "parent": 125
+ },
+ {
+  "id": 15273,
+  "count": 1067,
+  "name": "Educación",
+  "slug": "educacion",
+  "parent": 15272
+ },
+ {
+  "id": 4987,
+  "count": 1046,
+  "name": "Agricultura, Ganadería y Pesca",
+  "slug": "consejeria-agricultura-ganaderia-y-pesca",
+  "parent": 0
+ },
+ {
+  "id": 4990,
+  "count": 1039,
+  "name": "Transición Ecológica, Lucha contra el Cambio Climático y Planificación Territorial",
+  "slug": "consejeria-transicion-ecologica-lucha-contra-el-cambio-climatico-y-planificacion-territorial",
+  "parent": 0
+ },
+ {
+  "id": 15256,
+  "count": 1024,
+  "name": "Obras Públicas, Vivienda y Movilidad",
+  "slug": "obras-publicas-vivienda-y-movilidad",
+  "parent": 125
+ },
+ {
+  "id": 15291,
+  "count": 1008,
+  "name": "Cultura",
+  "slug": "cultura-universidades-ciencia-e-innovacion-y-cultura",
+  "parent": 15288
+ },
+ {
+  "id": 15295,
+  "count": 955,
+  "name": "Bienestar Social, Igualdad, Juventud, Infancia y Familias",
+  "slug": "bienestar-social-igualdad-juventud-infancia-y-familias",
+  "parent": 125
+ },
+ {
+  "id": 24,
+  "count": 940,
+  "name": "Alertas",
+  "slug": "alertas",
+  "parent": 26
+ },
+ {
+  "id": 4988,
+  "count": 925,
+  "name": "Turismo, Industria y Comercio",
+  "slug": "consejeria-turismo-industria-y-comercio",
+  "parent": 0
+ },
+ {
+  "id": 4986,
+  "count": 908,
+  "name": "Economía, Conocimiento y Empleo",
+  "slug": "consejeria-economia-conocimiento-y-empleo",
+  "parent": 0
+ },
+ {
+  "id": 41,
+  "count": 867,
+  "name": "Agricultura",
+  "slug": "agricultura",
+  "parent": 4987
+ },
+ {
+  "id": 4,
+  "count": 849,
+  "name": "Turismo",
+  "slug": "turismo",
+  "parent": 4988
+ },
+ {
+  "id": 1,
+  "count": 826,
+  "name": "Sin categoría",
+  "slug": "sin-categoria",
+  "parent": 0
+ },
+ {
+  "id": 37,
+  "count": 818,
+  "name": "Vicepresidencia",
+  "slug": "vicepresidencia",
+  "parent": 0
+ },
+ {
+  "id": 15265,
+  "count": 808,
+  "name": "Presidencia, Administraciones Públicas, Justicia y Seguridad",
+  "slug": "presidencia-administraciones-publicas-justicia-y-seguridad",
+  "parent": 125
+ },
+ {
+  "id": 15313,
+  "count": 784,
+  "name": "Acuerdos de Gobierno",
+  "slug": "acuerdos-de-gobierno",
+  "parent": 15312
+ },
+ {
+  "id": 15312,
+  "count": 783,
+  "name": "Consejo de Gobierno",
+  "slug": "consejo-de-gobierno-consejerias",
+  "parent": 125
+ },
+ {
+  "id": 15292,
+  "count": 783,
+  "name": "Transición Ecológica y Energía",
+  "slug": "transicion-ecologica-y-energia",
+  "parent": 125
+ },
+ {
+  "id": 4984,
+  "count": 781,
+  "name": "Derechos Sociales, Igualdad, Diversidad y Juventud",
+  "slug": "consejeria-derechos-sociales-igualdad-diversidad-y-juventud",
+  "parent": 0
+ },
+ {
+  "id": 32,
+  "count": 779,
+  "name": "Educación y Universidades",
+  "slug": "educacion-y-universidades",
+  "parent": 4985
+ },
+ {
+  "id": 15274,
+  "count": 769,
+  "name": "Formación Profesional",
+  "slug": "formacion-profesional",
+  "parent": 15272
+ },
+ {
+  "id": 15305,
+  "count": 739,
+  "name": "Hemodonación",
+  "slug": "hemodonacion-sanidad",
+  "parent": 15300
+ },
+ {
+  "id": 15307,
+  "count": 728,
+  "name": "Agricultura, Ganadería, Pesca y Soberanía Alimentaria",
+  "slug": "agricultura-ganaderia-pesca-y-soberania-alimentaria",
+  "parent": 125
+ },
+ {
+  "id": 4998,
+  "count": 708,
+  "name": "Transición Ecológica",
+  "slug": "transicion-ecologica",
+  "parent": 4990
+ },
+ {
+  "id": 27,
+  "count": 697,
+  "name": "Conocimiento",
+  "slug": "conocimiento",
+  "parent": 4986
+ },
+ {
+  "id": 15285,
+  "count": 695,
+  "name": "Turismo y Empleo",
+  "slug": "turismo-y-empleo",
+  "parent": 125
+ },
+ {
+  "id": 4989,
+  "count": 668,
+  "name": "Obras Públicas, Transportes y Vivienda",
+  "slug": "consejeria-obras-publicas-transportes-y-vivienda",
+  "parent": 0
+ },
+ {
+  "id": 49,
+  "count": 653,
+  "name": "Ganadería",
+  "slug": "ganaderia",
+  "parent": 4987
+ },
+ {
+  "id": 4999,
+  "count": 595,
+  "name": "Lucha contra el Cambio Climático",
+  "slug": "lucha-contra-el-cambio-climatico",
+  "parent": 4990
+ },
+ {
+  "id": 15261,
+  "count": 576,
+  "name": "Hacienda y Relaciones con la Unión Europea",
+  "slug": "hacienda-y-relaciones-con-la-union-europea",
+  "parent": 125
+ },
+ {
+  "id": 5000,
+  "count": 573,
+  "name": "Planificación Territorial",
+  "slug": "planificacion-territorial",
+  "parent": 4990
+ },
+ {
+  "id": 15276,
+  "count": 564,
+  "name": "Deportes",
+  "slug": "deportes-educacion-formacion-profesional-actividad-fisica-y-deportes",
+  "parent": 15272
+ },
+ {
+  "id": 4982,
+  "count": 533,
+  "name": "Hacienda, Presupuestos y Asuntos Europeos",
+  "slug": "consejeria-hacienda-presupuestos-y-asuntos-europeos",
+  "parent": 0
+ },
+ {
+  "id": 15275,
+  "count": 511,
+  "name": "Actividad Física",
+  "slug": "actividad-fisica",
+  "parent": 15272
+ },
+ {
+  "id": 4983,
+  "count": 509,
+  "name": "Administraciones Públicas y Justicia",
+  "slug": "consejeria-administraciones-publicas-y-justicia",
+  "parent": 0
+ },
+ {
+  "id": 40,
+  "count": 476,
+  "name": "Hacienda",
+  "slug": "hacienda",
+  "parent": 4982
+ },
+ {
+  "id": 51,
+  "count": 461,
+  "name": "Pesca",
+  "slug": "pesca",
+  "parent": 4987
+ },
+ {
+  "id": 15290,
+  "count": 451,
+  "name": "Ciencia e Innovación (Aciisi)",
+  "slug": "ciencia-e-innovacion",
+  "parent": 15288
+ },
+ {
+  "id": 4991,
+  "count": 448,
+  "name": "Presupuestos",
+  "slug": "presupuestos",
+  "parent": 4982
+ },
+ {
+  "id": 4992,
+  "count": 447,
+  "name": "Asuntos Europeos",
+  "slug": "asuntos-europeos",
+  "parent": 4982
+ },
+ {
+  "id": 15286,
+  "count": 436,
+  "name": "Turismo",
+  "slug": "turismo-turismo-y-empleo",
+  "parent": 15285
+ },
+ {
+  "id": 15251,
+  "count": 429,
+  "name": "Economía, Industria, Comercio y Autónomos",
+  "slug": "economia-industria-comercio-y-autonomos",
+  "parent": 125
+ },
+ {
+  "id": 15296,
+  "count": 401,
+  "name": "Bienestar Social",
+  "slug": "bienestar-social",
+  "parent": 15295
+ },
+ {
+  "id": 4994,
+  "count": 387,
+  "name": "Derechos Sociales",
+  "slug": "derechos-sociales",
+  "parent": 4984
+ },
+ {
+  "id": 15258,
+  "count": 327,
+  "name": "Vivienda",
+  "slug": "vivienda-obras-publicas-vivienda-y-movilidad",
+  "parent": 15256
+ },
+ {
+  "id": 70,
+  "count": 320,
+  "name": "Empleo",
+  "slug": "empleo",
+  "parent": 4986
+ },
+ {
+  "id": 12,
+  "count": 320,
+  "name": "Obras Públicas",
+  "slug": "obras-publicas",
+  "parent": 4989
+ },
+ {
+  "id": 15302,
+  "count": 319,
+  "name": "Salud Pública",
+  "slug": "salud-publica-sanidad",
+  "parent": 15300
+ },
+ {
+  "id": 15257,
+  "count": 304,
+  "name": "Obras Públicas",
+  "slug": "obras-publicas-obras-publicas-vivienda-y-movilidad",
+  "parent": 15256
+ },
+ {
+  "id": 15308,
+  "count": 298,
+  "name": "Agricultura",
+  "slug": "agricultura-agricultura-ganaderia-pesca-y-soberania-alimentaria",
+  "parent": 15307
+ },
+ {
+  "id": 15287,
+  "count": 285,
+  "name": "Empleo",
+  "slug": "empleo-turismo-y-empleo",
+  "parent": 15285
+ },
+ {
+  "id": 15277,
+  "count": 277,
+  "name": "Política Territorial, Cohesión Territorial y Aguas",
+  "slug": "politica-territorial-cohesion-territorial-y-aguas",
+  "parent": 125
+ },
+ {
+  "id": 15267,
+  "count": 270,
+  "name": "Administraciones Públicas",
+  "slug": "administraciones-publicas-presidencia-administraciones-publicas-justicia-y-seguridad",
+  "parent": 15265
+ },
+ {
+  "id": 55,
+  "count": 261,
+  "name": "Vivienda",
+  "slug": "vivienda",
+  "parent": 4989
+ },
+ {
+  "id": 15279,
+  "count": 259,
+  "name": "Cohesión Territorial",
+  "slug": "cohesion-territorial",
+  "parent": 15277
+ },
+ {
+  "id": 15355,
+  "count": 254,
+  "name": "PROEXCA",
+  "slug": "proexca",
+  "parent": 9
+ },
+ {
+  "id": 15294,
+  "count": 247,
+  "name": "Energía",
+  "slug": "energia-transicion-ecologica-y-energia",
+  "parent": 15292
+ },
+ {
+  "id": 15278,
+  "count": 245,
+  "name": "Política Territorial",
+  "slug": "politica-territorial-politica-territorial-cohesion-territorial-y-aguas",
+  "parent": 15277
+ },
+ {
+  "id": 74,
+  "count": 244,
+  "name": "SUC",
+  "slug": "suc",
+  "parent": 22
+ },
+ {
+  "id": 15270,
+  "count": 221,
+  "name": "Cuerpo General de la Policía Canaria",
+  "slug": "cuerpo-general-de-la-policia-canaria-presidencia-administraciones-publicas-justicia-y-seguridad",
+  "parent": 15265
+ },
+ {
+  "id": 20,
+  "count": 219,
+  "name": "Turismo, Cultura y Deportes",
+  "slug": "consejeria-turismo-cultura-y-deportes",
+  "parent": 4981
+ },
+ {
+  "id": 15349,
+  "count": 218,
+  "name": "Alimentación",
+  "slug": "alimentacion-agricultura-ganaderia-pesca-y-soberania-alimentaria",
+  "parent": 15307
+ },
+ {
+  "id": 15293,
+  "count": 210,
+  "name": "Transición Ecológica",
+  "slug": "transicion-ecologica-transicion-ecologica-y-energia",
+  "parent": 15292
+ },
+ {
+  "id": 15259,
+  "count": 206,
+  "name": "Movilidad",
+  "slug": "movilidad",
+  "parent": 15256
+ },
+ {
+  "id": 15268,
+  "count": 203,
+  "name": "Justicia",
+  "slug": "justicia-presidencia-administraciones-publicas-justicia-y-seguridad",
+  "parent": 15265
+ },
+ {
+  "id": 10,
+  "count": 202,
+  "name": "Justicia",
+  "slug": "justicia",
+  "parent": 4983
+ },
+ {
+  "id": 38,
+  "count": 201,
+  "name": "Economía",
+  "slug": "economia",
+  "parent": 4986
+ },
+ {
+  "id": 13,
+  "count": 195,
+  "name": "Transportes",
+  "slug": "transportes",
+  "parent": 4989
+ },
+ {
+  "id": 15252,
+  "count": 195,
+  "name": "Economía",
+  "slug": "economia-economia-industria-comercio-y-autonomos",
+  "parent": 15251
+ },
+ {
+  "id": 4993,
+  "count": 190,
+  "name": "Administraciones Públicas",
+  "slug": "administraciones-publicas",
+  "parent": 4983
+ },
+ {
+  "id": 36,
+  "count": 188,
+  "name": "Empleo, Políticas Sociales y Vivienda",
+  "slug": "consejeria-empleo-politicas-sociales-y-vivienda",
+  "parent": 4981
+ },
+ {
+  "id": 28,
+  "count": 183,
+  "name": "Economía, Industria, Comercio y Conocimiento",
+  "slug": "consejeria-economia-industria-comercio-y-conocimiento",
+  "parent": 4981
+ },
+ {
+  "id": 4995,
+  "count": 183,
+  "name": "Igualdad",
+  "slug": "igualdad",
+  "parent": 4984
+ },
+ {
+  "id": 15309,
+  "count": 158,
+  "name": "Ganadería",
+  "slug": "ganaderia-agricultura-ganaderia-pesca-y-soberania-alimentaria",
+  "parent": 15307
+ },
+ {
+  "id": 15297,
+  "count": 157,
+  "name": "Igualdad",
+  "slug": "igualdad-bienestar-social-igualdad-juventud-infancia-y-familias",
+  "parent": 15295
+ },
+ {
+  "id": 65,
+  "count": 147,
+  "name": "Juventud",
+  "slug": "juventud",
+  "parent": 4984
+ },
+ {
+  "id": 15352,
+  "count": 139,
+  "name": "Instituto Canario de Calidad Agroalimentaria",
+  "slug": "instituto-canario-de-calidad-agroalimentaria",
+  "parent": 15307
+ },
+ {
+  "id": 15299,
+  "count": 137,
+  "name": "Infancia y Familias",
+  "slug": "infancia-y-familias",
+  "parent": 15295
+ },
+ {
+  "id": 15280,
+  "count": 130,
+  "name": "Aguas",
+  "slug": "aguas-politica-territorial-cohesion-territorial-y-aguas",
+  "parent": 15277
+ },
+ {
+  "id": 15254,
+  "count": 129,
+  "name": "Comercio",
+  "slug": "comercio-economia-industria-comercio-y-autonomos",
+  "parent": 15251
+ },
+ {
+  "id": 15298,
+  "count": 127,
+  "name": "Juventud",
+  "slug": "juventud-bienestar-social-igualdad-juventud-infancia-y-familias",
+  "parent": 15295
+ },
+ {
+  "id": 15310,
+  "count": 126,
+  "name": "Pesca",
+  "slug": "pesca-agricultura-ganaderia-pesca-y-soberania-alimentaria",
+  "parent": 15307
+ },
+ {
+  "id": 4997,
+  "count": 125,
+  "name": "Comercio",
+  "slug": "comercio-consejeria-turismo-industria-y-comercio",
+  "parent": 4988
+ },
+ {
+  "id": 15301,
+  "count": 124,
+  "name": "SUC",
+  "slug": "suc-sanidad",
+  "parent": 15300
+ },
+ {
+  "id": 15253,
+  "count": 121,
+  "name": "Industria",
+  "slug": "industria-economia-industria-comercio-y-autonomos",
+  "parent": 15251
+ },
+ {
+  "id": 15255,
+  "count": 115,
+  "name": "Autónomos",
+  "slug": "autonomos",
+  "parent": 15251
+ },
+ {
+  "id": 53,
+  "count": 113,
+  "name": "Industria",
+  "slug": "industria",
+  "parent": 4988
+ },
+ {
+  "id": 15281,
+  "count": 111,
+  "name": "Emergencias",
+  "slug": "emergencias",
+  "parent": 15277
+ },
+ {
+  "id": 15262,
+  "count": 109,
+  "name": "Hacienda",
+  "slug": "hacienda-hacienda-y-relaciones-con-la-union-europea",
+  "parent": 15261
+ },
+ {
+  "id": 42,
+  "count": 103,
+  "name": "Agricultura, Ganadería, Pesca y Aguas",
+  "slug": "consejeria-agricultura-ganaderia-pesca-y-aguas",
+  "parent": 4981
+ },
+ {
+  "id": 15269,
+  "count": 103,
+  "name": "Seguridad",
+  "slug": "seguridad",
+  "parent": 15265
+ },
+ {
+  "id": 3657,
+  "count": 102,
+  "name": "Acción exterior",
+  "slug": "accion-exterior",
+  "parent": 9
+ },
+ {
+  "id": 15264,
+  "count": 102,
+  "name": "Comisionado del Régimen Económico y Fiscal de Canarias",
+  "slug": "comisionado-del-regimen-economico-y-fiscal-de-canarias",
+  "parent": 15261
+ },
+ {
+  "id": 71,
+  "count": 90,
+  "name": "Políticas Sociales",
+  "slug": "politicas-sociales",
+  "parent": 36
+ },
+ {
+  "id": 16787,
+  "count": 86,
+  "name": "Fondos Europeos (Programas Canarias FEDER Y FSE+)",
+  "slug": "fondos-europeos-programas-canarias-feder-y-fse",
+  "parent": 15261
+ },
+ {
+  "id": 86,
+  "count": 85,
+  "name": "Obras Públicas y Transportes",
+  "slug": "consejeria-obras-publicas-y-transportes",
+  "parent": 4981
+ },
+ {
+  "id": 15353,
+  "count": 84,
+  "name": "Gestión del Medio Rural de Canarias",
+  "slug": "gestion-del-medio-rural-de-canarias",
+  "parent": 15307
+ },
+ {
+  "id": 57,
+  "count": 83,
+  "name": "Istac",
+  "slug": "istac",
+  "parent": 4982
+ },
+ {
+  "id": 64,
+  "count": 82,
+  "name": "Empleo Público",
+  "slug": "empleo-publico",
+  "parent": 4983
+ },
+ {
+  "id": 15289,
+  "count": 79,
+  "name": "Universidades",
+  "slug": "universidades",
+  "parent": 15288
+ },
+ {
+  "id": 15260,
+  "count": 78,
+  "name": "Costas y Gestión del espacio marítimo canario",
+  "slug": "costas-y-gestion-del-espacio-maritimo-canario",
+  "parent": 15256
+ },
+ {
+  "id": 18284,
+  "count": 72,
+  "name": "Participación Ciudadana",
+  "slug": "participacion-ciudadana-presidencia-administraciones-publicas-justicia-y-seguridad",
+  "parent": 15265
+ },
+ {
+  "id": 18283,
+  "count": 71,
+  "name": "Transparencia",
+  "slug": "transparencia-presidencia-administraciones-publicas-justicia-y-seguridad",
+  "parent": 15265
+ },
+ {
+  "id": 6,
+  "count": 71,
+  "name": "Deportes",
+  "slug": "deportes",
+  "parent": 4985
+ },
+ {
+  "id": 67,
+  "count": 66,
+  "name": "Transparencia",
+  "slug": "transparencia",
+  "parent": 4983
+ },
+ {
+  "id": 166,
+  "count": 64,
+  "name": "Seguridad Laboral",
+  "slug": "seguridad-laboral",
+  "parent": 36
+ },
+ {
+  "id": 66,
+  "count": 63,
+  "name": "Participación ciudadana",
+  "slug": "participacion-ciudadana",
+  "parent": 4983
+ },
+ {
+  "id": 25,
+  "count": 60,
+  "name": "Cuerpo General de la Policía Canaria",
+  "slug": "cuerpo-general-de-la-policia-canaria",
+  "parent": 26
+ },
+ {
+  "id": 4996,
+  "count": 56,
+  "name": "Diversidad",
+  "slug": "diversidad",
+  "parent": 4984
+ },
+ {
+  "id": 33,
+  "count": 55,
+  "name": "Política Territorial y Sostenibilidad",
+  "slug": "consejeria-politica-territorial-sostenibilidad",
+  "parent": 4981
+ },
+ {
+  "id": 18285,
+  "count": 54,
+  "name": "Gobierno Abierto",
+  "slug": "gobierno-abierto-presidencia-administraciones-publicas-justicia-y-seguridad",
+  "parent": 15265
+ },
+ {
+  "id": 60,
+  "count": 46,
+  "name": "Presidencia, Justicia e Igualdad",
+  "slug": "consejeria-presidencia-justicia-e-igualdad",
+  "parent": 4981
+ },
+ {
+  "id": 15284,
+  "count": 45,
+  "name": "Protección Civil",
+  "slug": "proteccion-civil-politica-territorial-cohesion-territorial-y-aguas",
+  "parent": 15277
+ },
+ {
+  "id": 15263,
+  "count": 41,
+  "name": "Relaciones con la Unión Europea",
+  "slug": "relaciones-con-la-union-europea",
+  "parent": 15261
+ },
+ {
+  "id": 15351,
+  "count": 40,
+  "name": "Instituto Canario de Investigaciones Agrarias",
+  "slug": "instituto-canario-de-investigaciones-agrarias",
+  "parent": 15307
+ },
+ {
+  "id": 47,
+  "count": 39,
+  "name": "Alimentación",
+  "slug": "alimentacion",
+  "parent": 42
+ },
+ {
+  "id": 59,
+  "count": 38,
+  "name": "Sostenibilidad",
+  "slug": "sostenibilidad",
+  "parent": 33
+ },
+ {
+  "id": 15282,
+  "count": 37,
+  "name": "Incidentes 112",
+  "slug": "incidentes-112",
+  "parent": 15277
+ },
+ {
+  "id": 76,
+  "count": 34,
+  "name": "Formación Seguridad y Emergencias",
+  "slug": "formacion-seguridad-y-emergencias",
+  "parent": 26
+ },
+ {
+  "id": 75,
+  "count": 30,
+  "name": "Protección Civil",
+  "slug": "proteccion-civil",
+  "parent": 26
+ },
+ {
+  "id": 48,
+  "count": 27,
+  "name": "Ayudas al sector primario",
+  "slug": "ayudas-al-sector-primario",
+  "parent": 42
+ },
+ {
+  "id": 15266,
+  "count": 27,
+  "name": "Presidencia",
+  "slug": "presidencia-presidencia-administraciones-publicas-justicia-y-seguridad",
+  "parent": 15265
+ },
+ {
+  "id": 15350,
+  "count": 27,
+  "name": "Investigación",
+  "slug": "investigacion-agricultura-ganaderia-pesca-y-soberania-alimentaria",
+  "parent": 15307
+ },
+ {
+  "id": 165,
+  "count": 26,
+  "name": "Día de Canarias",
+  "slug": "dia-de-canarias",
+  "parent": 0
+ },
+ {
+  "id": 15271,
+  "count": 26,
+  "name": "Policía Local",
+  "slug": "policia-local-presidencia-administraciones-publicas-justicia-y-seguridad",
+  "parent": 15265
+ },
+ {
+  "id": 52,
+  "count": 23,
+  "name": "Comercio y consumo",
+  "slug": "comercio",
+  "parent": 28
+ },
+ {
+  "id": 46,
+  "count": 17,
+  "name": "Aguas",
+  "slug": "aguas",
+  "parent": 42
+ },
+ {
+  "id": 77,
+  "count": 14,
+  "name": "Policía Local",
+  "slug": "policia-local",
+  "parent": 26
+ },
+ {
+  "id": 54,
+  "count": 13,
+  "name": "Energía",
+  "slug": "energia",
+  "parent": 28
+ },
+ {
+  "id": 15283,
+  "count": 9,
+  "name": "Alertas",
+  "slug": "alertas-politica-territorial-cohesion-territorial-y-aguas",
+  "parent": 15277
+ },
+ {
+  "id": 68,
+  "count": 9,
+  "name": "Violencia machista e igualdad",
+  "slug": "violencia-machista-e-igualdad",
+  "parent": 60
+ },
+ {
+  "id": 56,
+  "count": 9,
+  "name": "Agencia Tributaria Canaria",
+  "slug": "agencia-tributaria-canaria",
+  "parent": 5001
+ },
+ {
+  "id": 58,
+  "count": 8,
+  "name": "Política Territorial",
+  "slug": "politica-territorial",
+  "parent": 33
+ },
+ {
+  "id": 61,
+  "count": 7,
+  "name": "Administración pública",
+  "slug": "administracion-publica",
+  "parent": 60
+ },
+ {
+  "id": 123,
+  "count": 4,
+  "name": "Investigación",
+  "slug": "investigacion",
+  "parent": 42
+ },
+ {
+  "id": 50,
+  "count": 4,
+  "name": "Relaciones con la UE",
+  "slug": "relaciones-con-la-ue",
+  "parent": 28
+ },
+ {
+  "id": 9779,
+  "count": 3,
+  "name": "Eventos",
+  "slug": "eventos",
+  "parent": 4986
+ },
+ {
+  "id": 167,
+  "count": 3,
+  "name": "Gobierno Abierto",
+  "slug": "gobierno-abierto",
+  "parent": 60
+ },
+ {
+  "id": 3658,
+  "count": 2,
+  "name": "Comisionado de Inclusión Social y Lucha contra la Pobreza",
+  "slug": "comisionado",
+  "parent": 37
+ },
+ {
+  "id": 5001,
+  "count": 1,
+  "name": "Hacienda",
+  "slug": "consejeria-hacienda",
+  "parent": 4981
+ },
+ {
+  "id": 62,
+  "count": 1,
+  "name": "Simplificación y e-administración",
+  "slug": "simplificacion-y-e-administracion",
+  "parent": 61
+ },
+ {
+  "id": 15356,
+  "count": 0,
+  "name": "Intervenciones",
+  "slug": "intervenciones",
+  "parent": 9
+ },
+ {
+  "id": 4981,
+  "count": 0,
+  "name": "IX Legislatura",
+  "slug": "ix-legislatura",
+  "parent": 0
+ },
+ {
+  "id": 45,
+  "count": 0,
+  "name": "Orden del día",
+  "slug": "orden-del-dia",
+  "parent": 161
+ },
+ {
+  "id": 63,
+  "count": 0,
+  "name": "Ayuntamientos y Cabildos",
+  "slug": "ayuntamientos-y-cabildos",
+  "parent": 61
+ },
+ {
+  "id": 15314,
+  "count": 0,
+  "name": "Orden del día",
+  "slug": "orden-del-dia-consejo-de-gobierno-consejerias",
+  "parent": 15312
+ }
+]

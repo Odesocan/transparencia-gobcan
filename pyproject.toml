@@ -1,0 +1,66 @@
+[project]
+name = "transparencia-gobcan"
+version = "0.1.0"
+description = "Detección continuada de la actividad ejecutiva y parlamentaria del Gobierno y el Parlamento de Canarias"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "GPL-3.0-or-later" }
+authors = [
+    { name = "ODESOCAN · Observatorio de Derechos Sociales de Canarias", email = "investigacion@odesocan.org" },
+]
+
+dependencies = [
+    # Extracción: la fuente principal es una API REST, no hace falta navegador
+    "httpx>=0.27",
+    "tenacity>=8.2",            # reintentos con espera progresiva
+    # Transformación
+    "pandas>=2.2",
+    "pydantic>=2.7",            # validación del modelo de datos
+    "beautifulsoup4>=4.12",     # extracción de la entradilla y respaldo HTML
+    "lxml>=5.2",
+    # Carga
+    "supabase>=2.5",
+    "python-dotenv>=1.0",
+    # Configuración y CLI
+    "pyyaml>=6.0",
+    "typer>=0.12",
+    "rich>=13.7",               # salida legible en consola
+]
+
+[project.optional-dependencies]
+# Plan B de extracción. No se instala en la ejecución normal: solo hace falta
+# si la API REST de Gobcan deja de estar disponible.
+respaldo = [
+    "playwright>=1.44",
+]
+dev = [
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+    "respx>=0.21",              # simulación de respuestas HTTP en los tests
+    "ruff>=0.4",
+]
+
+[project.scripts]
+transparencia = "transparencia_gobcan.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/transparencia_gobcan"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q --strict-markers"
+markers = [
+    "red: pruebas que consultan las fuentes reales; se omiten por defecto",
+]
+
+[tool.ruff]
+line-length = 110  # los titulares institucionales en español son largos
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

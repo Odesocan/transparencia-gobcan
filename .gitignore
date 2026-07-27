@@ -1,0 +1,39 @@
+# --- Credenciales: nunca en el repositorio ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# --- Datos: el repositorio guarda código y configuración, no volcados ---
+data/raw/
+data/interim/
+data/processed/
+*.csv
+*.parquet
+!tests/fixtures/*.csv
+
+# --- Playwright ---
+playwright-report/
+test-results/
+
+# --- Sistema ---
+.DS_Store
+Thumbs.db
+*.log
+logs/
+tmp/

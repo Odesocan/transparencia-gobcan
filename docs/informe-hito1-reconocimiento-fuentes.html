@@ -1,0 +1,674 @@
+<meta charset="utf-8">
+<title>Hito 1 · Reconocimiento de fuentes · transparencia-gobcan</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --teal:#00C8B4; --teal-dark:#009E8E; --teal-light:#E0FAF7;
+  --navy-dark:#0D1B2A; --navy-mid:#1A2F45; --navy-deep:#0F3460;
+  --white:#fff; --off-white:#F5F8FA; --text-main:#1A2F45; --text-muted:#6B8CA5;
+  --border-soft:#E4EDF5; --border-card:rgba(13,27,42,.08);
+  --red:#FF4757; --red-dark:#E0394A; --amber:#D4940A;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--off-white);color:var(--text-main);
+     font-family:'Inter',system-ui,sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1140px;margin:0 auto;padding:0 18px}
+@media(min-width:640px){.wrap{padding:0 32px}}
+@media(min-width:1024px){.wrap{padding:0 40px}}
+h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif;color:var(--navy-mid)}
+h1{font-size:clamp(1.85rem,4.2vw,2.8rem);font-weight:700;line-height:1.12;letter-spacing:-.005em;margin:0}
+h2{font-size:clamp(1.3rem,2.6vw,1.75rem);font-weight:700;margin:0}
+h3{font-size:clamp(1.05rem,1.7vw,1.18rem);font-weight:600;margin:30px 0 10px}
+h4{font-size:1rem;font-weight:600;margin:22px 0 8px}
+p{margin:0 0 14px}
+a{color:var(--teal-dark)}
+code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.86em;
+     background:var(--teal-light);color:var(--teal-dark);padding:1px 6px;border-radius:5px}
+pre{background:var(--navy-dark);color:#DCE6EF;border-radius:14px;padding:16px 18px;
+    overflow-x:auto;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.8rem;line-height:1.6}
+pre code{background:none;color:inherit;padding:0}
+
+/* ---------- HERO ---------- */
+.hero{background:linear-gradient(145deg,#0D1B2A 0%,#1A2F45 60%,#0F3460 100%);
+      position:relative;overflow:hidden;padding:54px 0 46px;margin-bottom:44px}
+.hero::before,.hero::after{content:'';position:absolute;width:420px;height:420px;border-radius:50%}
+.hero::before{background:radial-gradient(circle,rgba(0,200,180,.25),transparent 70%);top:-190px;right:-120px}
+.hero::after{background:radial-gradient(circle,rgba(0,200,180,.14),transparent 70%);bottom:-230px;left:-140px}
+.hero .wrap{position:relative;z-index:1}
+.eyebrow{font-family:'Space Grotesk';font-size:10px;font-weight:700;text-transform:uppercase;
+         letter-spacing:.12em;color:rgba(255,255,255,.55);margin-bottom:16px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,200,180,.15);
+  border:1px solid rgba(0,200,180,.3);border-radius:99px;padding:5px 15px;margin-bottom:18px;
+  font-family:'Space Grotesk';font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--teal)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:pulso 2s infinite}
+@keyframes pulso{0%,100%{opacity:1}50%{opacity:.35}}
+.hero h1{color:#fff;font-size:clamp(1.6rem,3.4vw,2.4rem);max-width:900px}
+.hero h1 em{font-style:normal;color:var(--teal)}
+.hero p.sub{color:rgba(255,255,255,.65);max-width:760px;margin-top:14px;font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:26px;margin-top:26px;
+      border-top:1px solid rgba(255,255,255,.12);padding-top:20px}
+.meta div{min-width:130px}
+.meta .k{font-family:'Space Grotesk';font-size:10px;font-weight:700;text-transform:uppercase;
+         letter-spacing:.12em;color:var(--text-muted);display:block;margin-bottom:3px}
+.meta .v{color:#fff;font-size:.9rem;font-weight:500}
+
+/* ---------- KPIs ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:32px}
+.stat-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+           border-radius:16px;padding:18px 16px}
+.stat-number{font-family:'Space Grotesk';font-weight:700;font-size:clamp(1.9rem,4.4vw,2.7rem);
+             color:var(--teal);line-height:1.05}
+.stat-number.alerta{color:var(--red)}
+.stat-label{text-transform:uppercase;color:var(--text-muted);letter-spacing:.12em;
+            font-size:10px;font-family:'Space Grotesk';font-weight:700;margin-top:7px;line-height:1.5}
+
+/* ---------- RESUMEN ---------- */
+.resumen{background:var(--white);border-left:4px solid var(--teal);border-radius:0 16px 16px 0;
+         padding:24px 28px;box-shadow:0 2px 16px rgba(13,27,42,.08);margin-bottom:50px}
+.resumen .label{font-family:'Space Grotesk';font-size:11px;font-weight:700;text-transform:uppercase;
+                letter-spacing:.12em;color:var(--teal-dark);display:block;margin-bottom:10px}
+.resumen p:last-child{margin-bottom:0}
+
+/* ---------- SECCIONES ---------- */
+section.bloque{margin-bottom:56px}
+.section-label{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.pill{background:var(--teal-light);color:var(--teal-dark);font-family:'Space Grotesk';font-weight:700;
+      text-transform:uppercase;border-radius:99px;padding:5px 14px;font-size:11px;letter-spacing:.08em;
+      white-space:nowrap}
+.label-text{font-family:'Space Grotesk';font-weight:700;color:var(--navy-mid);
+            font-size:clamp(1.25rem,2.4vw,1.6rem);line-height:1.2}
+.card{background:#fff;border-radius:16px;box-shadow:0 2px 16px rgba(13,27,42,.08);
+      padding:26px 28px;margin-bottom:16px}
+.card.narrow{max-width:860px}
+
+/* ---------- TABLAS ---------- */
+.tabla-wrap{overflow-x:auto;border-radius:14px;box-shadow:0 2px 16px rgba(13,27,42,.08);
+            background:#fff;margin:14px 0 8px}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.87rem}
+th{background:var(--navy-dark);color:#fff;font-family:'Space Grotesk';font-weight:700;
+   text-align:left;padding:12px 14px;font-size:.8rem;letter-spacing:.02em;vertical-align:bottom}
+td{padding:11px 14px;border-bottom:1px solid var(--border-soft);vertical-align:top}
+tbody tr:nth-child(even){background:var(--off-white)}
+tbody tr:last-child td{border-bottom:none}
+.tabla-num{font-family:'Space Grotesk';font-size:11px;font-weight:700;text-transform:uppercase;
+           letter-spacing:.08em;color:var(--teal-dark);margin:26px 0 4px}
+.tabla-tit{font-family:'Space Grotesk';font-weight:700;color:var(--navy-mid);margin:0 0 10px;font-size:1.02rem}
+.nota{font-size:.78rem;color:var(--text-muted);font-style:italic;margin:8px 0 0}
+.tl{color:var(--teal-dark);font-weight:600}
+.rd{color:var(--red);font-weight:600}
+.am{color:var(--amber);font-weight:600}
+.mono{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.82em}
+
+/* ---------- GRÁFICO ---------- */
+.chart-container{background:#fff;border-radius:24px;border:1px solid var(--border-card);
+                 padding:26px 28px;margin:18px 0}
+.chart-badge{display:inline-block;background:var(--teal-light);color:var(--teal-dark);
+  font-family:'Space Grotesk';font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.1em;padding:4px 11px;border-radius:99px;margin-bottom:9px}
+.chart-tit{font-family:'Space Grotesk';font-weight:700;color:var(--navy-mid);font-size:1.05rem;margin:0 0 3px}
+.chart-sub{font-size:.9rem;color:var(--text-main);margin:0 0 20px}
+figcaption{font-size:.78rem;color:var(--text-muted);margin-top:14px;line-height:1.55}
+.barras{display:flex;align-items:flex-end;gap:5px;height:190px;padding-top:8px;
+        border-bottom:1px solid var(--border-soft)}
+.barra{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+.barra i{width:100%;background:var(--teal);border-radius:4px 4px 0 0;display:block;
+         transition:background .2s;min-height:2px}
+.barra.pico i{background:var(--navy-dark)}
+.barra b{font-family:'Space Grotesk';font-size:9.5px;color:var(--text-muted);font-weight:700;margin-bottom:4px}
+.eje{display:flex;gap:5px;margin-top:7px}
+.eje span{flex:1;text-align:center;font-family:'Space Grotesk';font-size:9.5px;
+          color:var(--text-muted);font-weight:600}
+.comparativa{display:grid;gap:16px;margin-top:6px}
+.cmp-fila{display:grid;grid-template-columns:210px 1fr;gap:16px;align-items:center}
+@media(max-width:640px){.cmp-fila{grid-template-columns:1fr;gap:5px}}
+.cmp-fila .n{font-family:'Space Grotesk';font-size:.85rem;font-weight:600;color:var(--navy-mid)}
+.cmp-bar{height:34px;border-radius:8px;display:flex;align-items:center;padding-left:13px;
+         color:#fff;font-family:'Space Grotesk';font-weight:700;font-size:.85rem;white-space:nowrap}
+
+/* ---------- AVISOS ---------- */
+.aviso{border-radius:14px;padding:18px 22px;margin:16px 0;border-left:4px solid}
+.aviso.rojo{background:rgba(255,71,87,.06);border-color:var(--red)}
+.aviso.ambar{background:rgba(255,184,0,.08);border-color:var(--amber)}
+.aviso.teal{background:var(--teal-light);border-color:var(--teal)}
+.aviso .t{font-family:'Space Grotesk';font-weight:700;font-size:.95rem;margin-bottom:6px;display:block}
+.aviso.rojo .t{color:var(--red-dark)}
+.aviso.ambar .t{color:var(--amber)}
+.aviso.teal .t{color:var(--teal-dark)}
+.aviso p:last-child{margin-bottom:0}
+ul,ol{padding-left:22px;margin:0 0 14px}
+li{margin-bottom:7px}
+li::marker{color:var(--teal-dark)}
+
+/* ---------- DECISIONES ---------- */
+.decision{background:#fff;border-radius:16px;box-shadow:0 2px 16px rgba(13,27,42,.08);
+          padding:22px 26px;margin-bottom:14px;border-top:3px solid var(--teal)}
+.decision .num{font-family:'Space Grotesk';font-weight:700;color:var(--teal-dark);font-size:.8rem;
+               text-transform:uppercase;letter-spacing:.1em}
+.decision h4{margin:6px 0 10px}
+.reco{background:var(--off-white);border-radius:10px;padding:12px 16px;margin-top:12px;font-size:.9rem}
+.reco b{font-family:'Space Grotesk';color:var(--teal-dark)}
+
+footer{background:var(--navy-dark);color:var(--text-muted);padding:30px 0;margin-top:60px;font-size:.82rem}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+footer b{color:#fff;font-family:'Space Grotesk'}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--teal);border-radius:99px}
+</style>
+
+<div class="hero">
+  <div class="wrap">
+    <div class="eyebrow">ODESOCAN · Observatorio de Derechos Sociales de Canarias</div>
+    <div class="hero-badge"><span class="dot"></span> Hito 1 · Entregable</div>
+    <h1>Reconocimiento de fuentes:<br>el portal del Gobierno <em>tiene API</em> y el del Parlamento <em>no publica lo que buscamos</em></h1>
+    <p class="sub">Informe técnico previo al desarrollo del pipeline <span class="mono">transparencia-gobcan</span>.
+       Recoge estructura, selectores, paginación, volumen real y puntos de rotura de las dos fuentes,
+       y señala tres supuestos de la guía metodológica que el reconocimiento no confirma.</p>
+
+    <div class="meta">
+      <div><span class="k">Investigación</span><span class="v">Desarrollo de herramientas de datos</span></div>
+      <div><span class="k">Periodo de referencia</span><span class="v">Julio 2026</span></div>
+      <div><span class="k">Tipo de documento</span><span class="v">Informe técnico interno</span></div>
+      <div><span class="k">Fecha de reconocimiento</span><span class="v">27 de julio de 2026</span></div>
+    </div>
+
+    <div class="kpis">
+      <div class="stat-card">
+        <div class="stat-number">41.223</div>
+        <div class="stat-label">Entradas históricas<br>accesibles vía API</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number alerta">17,1</div>
+        <div class="stat-label">Entradas/día reales<br>en Gobcan (guía: 2–5)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">0,40</div>
+        <div class="stat-label">Entradas/día<br>en Parcan noticias</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number alerta">1,3%</div>
+        <div class="stat-label">Noticias de Parcan que<br>citan un grupo</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">0,8 s</div>
+        <div class="stat-label">Coste de una pasada<br>incremental completa</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<div class="resumen">
+  <span class="label">Resumen</span>
+  <p><b>El hallazgo principal es que el portal del Gobierno de Canarias no necesita scraping.</b> Está construido
+     sobre WordPress y expone su API REST pública sin autenticación en
+     <span class="mono">/noticias/wp-json/wp/v2/</span>, con 41.223 entradas históricas, filtrado por fecha y por
+     consejería, y captura incremental mediante <code>modified_after</code>. Playwright deja de ser necesario para
+     esta fuente: pasa a ser el plan B documentado por si la API se cierra.</p>
+  <p><b>El segundo hallazgo obliga a revisar el alcance.</b> El portal de noticias del Parlamento no publica
+     actividad legislativa: de 231 noticias analizadas en 19 meses, solo 3 mencionan un grupo parlamentario.
+     Son notas de comunicación institucional de la Cámara. El filtro por grupo proponente y el caso de uso de
+     votaciones no son alcanzables desde esa URL; sí lo son desde
+     <span class="mono">/iniciativas/</span>, que es un buscador con campo <code>PROPONENTE</code> explícito.</p>
+  <p><b>El tercero afecta al dimensionado.</b> El volumen real de Gobcan es de 17 entradas diarias, entre tres y
+     ocho veces la estimación de la guía, y un tercio son partes de incidentes del 112 y avisos meteorológicos
+     que no son actividad ejecutiva. Conviene filtrarlos en origen.</p>
+</div>
+
+<!-- ============ 1. GOBIERNO ============ -->
+<section class="bloque">
+  <div class="section-label">
+    <span class="pill">Fuente 1</span>
+    <span class="label-text">Portal de noticias del Gobierno de Canarias</span>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">1.1 &nbsp;Tecnología: WordPress con API REST abierta</h3>
+    <p>El portal es una instalación de WordPress con tema propio
+       (<span class="mono">wp-content/themes/tema_gobcan_noticias</span>). La detección vino de las referencias a
+       <span class="mono">api.w.org</span> y <span class="mono">xmlrpc.php</span> en el HTML. La API REST responde
+       sin credenciales y con las cabeceras de paginación estándar:</p>
+<pre><code>GET /noticias/wp-json/wp/v2/posts?per_page=100&amp;page=1
+→ 200 · X-WP-Total: 41223 · X-WP-TotalPages: 412
+→ Cache-Control: no-store, no-cache   (sin caché intermedia)</code></pre>
+    <p>Doce peticiones consecutivas sin pausa devolvieron <span class="tl">200</span> con una latencia media de
+       <span class="tl">0,57 s</span>: no hay limitación de tasa aparente. Existe además feed RSS en
+       <span class="mono">/noticias/feed/</span>, pero solo expone las últimas entradas y sin las áreas, así que
+       lo descartamos frente a la API.</p>
+
+    <div class="aviso teal">
+      <span class="t">Consecuencia para el stack</span>
+      <p>La guía decidía Playwright frente a nodriver. El reconocimiento hace que esa comparación deje de ser
+         relevante para esta fuente: <b>una llamada HTTP con <span class="mono">httpx</span> sustituye al navegador
+         completo</b>. Menos dependencias, ejecución en segundos y sin navegador que instalar en GitHub Actions.
+         Playwright queda documentado como respaldo (apartado 1.6).</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">1.2 &nbsp;Parámetros útiles de la API</h3>
+    <p>Todos verificados contra el servidor, no supuestos de la documentación de WordPress:</p>
+    <div class="tabla-wrap">
+      <table>
+        <thead><tr><th style="width:210px">Parámetro</th><th>Uso en el pipeline</th><th style="width:130px">Verificado</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">modified_after</td><td>Captura incremental: recoge también entradas <b>editadas</b> tras publicarse, no solo nuevas</td><td class="tl">Sí · 113 res.</td></tr>
+          <tr><td class="mono">after / before</td><td>Ventana temporal de la carga histórica inicial</td><td class="tl">Sí</td></tr>
+          <tr><td class="mono">categories</td><td>Filtrado por consejería en origen</td><td class="tl">Sí · 92 res.</td></tr>
+          <tr><td class="mono">categories_exclude</td><td>Excluir 112 y avisos meteorológicos sin descargarlos</td><td class="tl">Sí · 32.425 res.</td></tr>
+          <tr><td class="mono">_fields</td><td>Reduce la carga útil a los campos que persistimos</td><td class="tl">Sí</td></tr>
+          <tr><td class="mono">orderby=modified</td><td>Detectar correcciones editoriales posteriores</td><td class="tl">Sí</td></tr>
+          <tr><td class="mono">search</td><td>Reservado para la interfaz, no para la extracción</td><td class="tl">Sí · 3.482 res.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="nota">Una pasada incremental diaria completa —una sola petición con exclusiones y campos acotados—
+       devolvió 5 entradas en 29 KB y 0,8 s.</p>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">1.3 &nbsp;La taxonomía de áreas tiene dos generaciones conviviendo</h3>
+    <p>El portal tiene 168 categorías. Las consejerías de la legislatura actual cuelgan de la categoría padre
+       <span class="mono">Consejerías (id 125)</span> y son 13. Pero las categorías raíz conservan la nomenclatura
+       de la legislatura anterior, con nombres distintos para competencias equivalentes:</p>
+
+    <p class="tabla-num">Tabla 1.</p>
+    <p class="tabla-tit">Las dos nomenclaturas de consejerías presentes en el portal</p>
+    <div class="tabla-wrap">
+      <table>
+        <thead><tr>
+          <th style="width:60px">ID</th><th>Legislatura actual (hijas de <span style="font-weight:400">id 125</span>)</th>
+          <th style="width:80px">Entradas</th><th>Equivalente en la nomenclatura anterior (raíz)</th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="mono">15300</td><td>Sanidad</td><td class="tl">3.510</td><td>Sanidad <span class="mono">(22)</span></td></tr>
+          <tr><td class="mono">15272</td><td>Educación, Formación Profesional, Actividad Física y Deportes</td><td class="tl">1.549</td><td>Educación, Universidades, Cultura y Deportes <span class="mono">(4985)</span></td></tr>
+          <tr><td class="mono">15288</td><td>Universidades, Ciencia e Innovación y Cultura</td><td class="tl">1.260</td><td>— <span style="color:var(--text-muted)">(competencia repartida)</span></td></tr>
+          <tr><td class="mono">15256</td><td>Obras Públicas, Vivienda y Movilidad</td><td class="tl">1.024</td><td>Obras Públicas, Transportes y Vivienda <span class="mono">(4989)</span></td></tr>
+          <tr><td class="mono">15295</td><td>Bienestar Social, Igualdad, Juventud, Infancia y Familias</td><td class="tl">955</td><td>Derechos Sociales, Igualdad, Diversidad y Juventud <span class="mono">(4984)</span></td></tr>
+          <tr><td class="mono">15265</td><td>Presidencia, Administraciones Públicas, Justicia y Seguridad</td><td class="tl">808</td><td>Administraciones Públicas y Justicia <span class="mono">(4983)</span></td></tr>
+          <tr><td class="mono">15292</td><td>Transición Ecológica y Energía</td><td class="tl">783</td><td>Transición Ecológica, Lucha contra el Cambio Climático y Planificación Territorial <span class="mono">(4990)</span></td></tr>
+          <tr><td class="mono">15307</td><td>Agricultura, Ganadería, Pesca y Soberanía Alimentaria</td><td class="tl">728</td><td>Agricultura, Ganadería y Pesca <span class="mono">(4987)</span></td></tr>
+          <tr><td class="mono">15285</td><td>Turismo y Empleo</td><td class="tl">695</td><td>Turismo, Industria y Comercio <span class="mono">(4988)</span></td></tr>
+          <tr><td class="mono">15261</td><td>Hacienda y Relaciones con la Unión Europea</td><td class="tl">576</td><td>Hacienda, Presupuestos y Asuntos Europeos <span class="mono">(4982)</span></td></tr>
+          <tr><td class="mono">15251</td><td>Economía, Industria, Comercio y Autónomos</td><td class="tl">429</td><td>Economía, Conocimiento y Empleo <span class="mono">(4986)</span></td></tr>
+          <tr><td class="mono">15277</td><td>Política Territorial, Cohesión Territorial y Aguas</td><td class="tl">277</td><td>— <span style="color:var(--text-muted)">(competencia repartida)</span></td></tr>
+          <tr><td class="mono">15312</td><td><span class="am">Consejo de Gobierno</span> — órgano, no consejería</td><td class="tl">783</td><td>Consejo de Gobierno <span class="mono">(161)</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="nota">Fuente: elaboración propia a partir del endpoint <span class="mono">/wp-json/wp/v2/categories</span>
+       del Portal de Noticias del Gobierno de Canarias, consultado el 27 de julio de 2026.</p>
+
+    <div class="aviso ambar">
+      <span class="t">Esto valida la decisión de vocabulario cerrado, y la amplía</span>
+      <p>La guía pedía que las áreas siguieran la nomenclatura de secciones presupuestarias, igual que en la
+         herramienta de cargos políticos. El reconocimiento confirma que hace falta, porque la fuente cambia de
+         nomenclatura cada legislatura. Pero el fichero de configuración no puede ser una lista plana: necesita
+         ser <b>una tabla de correspondencias con vigencia temporal</b> —qué id de la fuente equivale a qué área
+         normalizada y entre qué fechas—. Si no, la serie histórica se parte en 2023 y las consultas por área
+         devuelven resultados incompletos sin avisar.</p>
+    </div>
+
+    <p>Hay además tres categorías que no son áreas sino posiciones editoriales, y que conviene no confundir con
+       ellas: <span class="mono">Portada (14)</span> con 20.220 entradas, <span class="mono">Lanzadera (164)</span>
+       con 17.726 y <span class="mono">Destacados (163)</span> con 6.288.</p>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">1.4 &nbsp;La entradilla: hay que construirla, no copiarla</h3>
+    <p>El campo <code>excerpt</code> de la API <b>no sirve como entradilla</b>. WordPress lo autogenera cortando a
+       unas 55 palabras, lo que produce dos defectos sistemáticos: concatena el sumario editorial con el arranque
+       del cuerpo sin separación, y trunca a mitad de palabra. En una muestra de 25 entradas, 18 terminaban
+       cortadas.</p>
+    <p>La entradilla real existe y está bien delimitada: es el <span class="mono">&lt;blockquote&gt;</span> con
+       el que abre el cuerpo, donde el gabinete coloca los dos o tres destacados de la nota. Ejemplo real:</p>
+<pre><code>&lt;blockquote&gt;
+  &lt;p&gt;La incorporación de dos consultas de enfermería, una de ellas de
+     teledermatología, y la colaboración con Atención Primaria contribuyen a
+     optimizar la atención de los pacientes&lt;/p&gt;
+  &lt;p&gt;La sección mantiene una importante actividad docente y recibe a residentes
+     de Dermatología de otros hospitales de Canarias&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;La sección de Dermatología del Hospital Universitario Doctor José Molina…</code></pre>
+    <p>Aparece en aproximadamente la mitad de las entradas. Las que no lo tienen son casi siempre partes del 112
+       y avisos meteorológicos, que vamos a excluir de todos modos. Propongo una <b>cascada de extracción</b>:
+       sumario del <span class="mono">blockquote</span> → si no existe, primer párrafo del cuerpo cortado por
+       frase completa → si no, <code>excerpt</code> saneado. Y registrar en los logs qué nivel de la cascada se
+       usó, para vigilar si el gabinete cambia de práctica editorial.</p>
+
+    <div class="aviso teal">
+      <span class="t">Precisión sobre el requisito de no almacenar el cuerpo</span>
+      <p>Extraer el sumario obliga a <b>descargar</b> el campo <code>content</code>, pero no a guardarlo. El cuerpo
+         se procesa en memoria y se descarta; en Supabase solo se persiste la entradilla resultante. Es compatible
+         con la decisión de la guía, pero conviene dejarlo escrito en el README para que quien mantenga esto en el
+         futuro no lo interprete como una desviación.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">1.5 &nbsp;Volumen real: entre tres y ocho veces la estimación</h3>
+    <p>La guía estimaba 2–5 entradas diarias. La medición sobre los últimos 60 días da otra cosa:</p>
+
+    <figure class="chart-container" style="margin-left:0;margin-right:0">
+      <span class="chart-badge">Gráfico 1</span>
+      <p class="chart-tit">Volumen diario estimado frente a volumen medido</p>
+      <p class="chart-sub">Entradas por día en el Portal de Noticias del Gobierno de Canarias</p>
+      <div class="comparativa">
+        <div class="cmp-fila">
+          <span class="n">Estimación de la guía</span>
+          <div class="cmp-bar" style="width:20%;background:var(--text-muted)">2–5 /día</div>
+        </div>
+        <div class="cmp-fila">
+          <span class="n">Medido, todo el portal</span>
+          <div class="cmp-bar" style="width:100%;background:var(--red)">17,1 /día</div>
+        </div>
+        <div class="cmp-fila">
+          <span class="n">Medido, sin 112 ni avisos</span>
+          <div class="cmp-bar" style="width:91%;background:var(--teal)">15,6 /día</div>
+        </div>
+      </div>
+      <figcaption><b>Fuente:</b> elaboración propia sobre 700 entradas publicadas entre el 17 de junio y el 27 de
+        julio de 2026, obtenidas vía API REST. Mediana 19/día, máximo 35, mínimo 1.
+        La categoría <span class="mono">Incidentes 112 (44)</span> aporta 104 entradas y
+        <span class="mono">Alertas (24)</span> otras 34 en ese periodo.</figcaption>
+    </figure>
+
+    <p>El 31% de lo que publica el portal son partes de sucesos del 112 —rescates, accidentes, incendios— y avisos
+       de prealerta meteorológica. <b>No son actividad ejecutiva</b> y su inclusión distorsionaría cualquier
+       lectura de la acción de gobierno, además de inundar las alertas por correo. Recomiendo excluirlos en origen
+       con <span class="mono">categories_exclude=44,24</span> y registrar el conteo de descartes en la tabla de logs,
+       para poder revisar la decisión si alguna vez interesa la dimensión de emergencias.</p>
+
+    <figure class="chart-container" style="margin-left:0;margin-right:0">
+      <span class="chart-badge">Gráfico 2</span>
+      <p class="chart-tit">Distribución horaria de las publicaciones</p>
+      <p class="chart-sub">562 entradas útiles · hora canaria</p>
+      <div class="barras">
+        <div class="barra"><b>2</b><i style="height:2%"></i></div>
+        <div class="barra"><b>14</b><i style="height:11%"></i></div>
+        <div class="barra"><b>55</b><i style="height:45%"></i></div>
+        <div class="barra"><b>67</b><i style="height:54%"></i></div>
+        <div class="barra"><b>72</b><i style="height:59%"></i></div>
+        <div class="barra pico"><b>108</b><i style="height:88%"></i></div>
+        <div class="barra pico"><b>123</b><i style="height:100%"></i></div>
+        <div class="barra"><b>57</b><i style="height:46%"></i></div>
+        <div class="barra"><b>21</b><i style="height:17%"></i></div>
+        <div class="barra"><b>20</b><i style="height:16%"></i></div>
+        <div class="barra"><b>8</b><i style="height:7%"></i></div>
+        <div class="barra"><b>9</b><i style="height:7%"></i></div>
+        <div class="barra"><b>2</b><i style="height:2%"></i></div>
+        <div class="barra"><b>1</b><i style="height:1%"></i></div>
+        <div class="barra"><b>3</b><i style="height:3%"></i></div>
+      </div>
+      <div class="eje">
+        <span>07</span><span>08</span><span>09</span><span>10</span><span>11</span><span>12</span><span>13</span>
+        <span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span>
+      </div>
+      <figcaption><b>Fuente:</b> elaboración propia a partir del campo <span class="mono">date</span> de la API.
+        El 86% de las publicaciones se concentra entre las 09:00 y las 15:00, con el máximo a las 13:00.
+        Este patrón es la base de la propuesta de cadencia del apartado 4.1.</figcaption>
+    </figure>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">1.6 &nbsp;Plan B: el HTML y sus puntos de rotura</h3>
+    <p>Si la API se cerrara, el HTML es extraíble pero notablemente más frágil. El contenido es server-side —las
+       únicas peticiones XHR durante la carga son de analítica—, así que ni siquiera ahí haría falta un navegador
+       completo. La paginación es <span class="mono">/category/&lt;slug&gt;/page/N/</span>, 10 entradas por página,
+       y devuelve 404 al pasarse del final.</p>
+    <p>Los selectores existen y son semánticos, pero <b>cambian de comportamiento según la vista</b>, que es
+       justo el tipo de trampa que rompe un scraper en silencio:</p>
+
+    <p class="tabla-num">Tabla 2.</p>
+    <p class="tabla-tit">Selectores del HTML y su fiabilidad observada</p>
+    <div class="tabla-wrap">
+      <table>
+        <thead><tr><th style="width:180px">Selector</th><th>Comportamiento</th><th style="width:110px">Fiabilidad</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">article</td><td>19 nodos en portada, 10 en vista de categoría</td><td class="tl">Alta</td></tr>
+          <tr><td class="mono">.article-title</td><td>Título; estable en ambas vistas</td><td class="tl">Alta</td></tr>
+          <tr><td class="mono">.article-excerpt</td><td><b>Solo existe en portada.</b> En vista de categoría devuelve vacío</td><td class="rd">Baja</td></tr>
+          <tr><td class="mono">.article-date</td><td>Solo se pinta en la primera entrada de cada grupo de fecha; el resto queda vacío</td><td class="rd">Baja</td></tr>
+          <tr><td class="mono">.article-cat</td><td>Concatena categorías de las dos nomenclaturas, con duplicados («Hospitales, Hospitales, Sanidad, Sanidad»)</td><td class="am">Media</td></tr>
+          <tr><td class="mono">article a</td><td><b>Trampa:</b> el primer enlace apunta a la categoría, no a la noticia. Hay que usar <span class="mono">.article-title a</span></td><td class="rd">Baja</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="nota">Fuente: inspección del DOM renderizado con Playwright sobre la portada y sobre
+       <span class="mono">/category/consejerias/sanidad/</span>, 27 de julio de 2026.</p>
+  </div>
+</section>
+
+<!-- ============ 2. PARLAMENTO ============ -->
+<section class="bloque">
+  <div class="section-label">
+    <span class="pill">Fuente 2</span>
+    <span class="label-text">Portal del Parlamento de Canarias</span>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">2.1 &nbsp;Tecnología y estructura</h3>
+    <p>HTML plano server-side, sin framework de JavaScript: solo jQuery y Bootstrap. No hay RSS ni sitemap
+       —el declarado en <span class="mono">robots.txt</span> devuelve 404—. El archivo se organiza por año y mes
+       en <span class="mono">/noticias/AAAA/M/</span> y cada mes devuelve todas sus noticias en una sola página,
+       sin paginación interna. La unidad de recorrido natural es, por tanto, el mes.</p>
+    <p>El marcado es limpio y, a diferencia del de Gobcan, tiene anclas semánticas estables:</p>
+<pre><code>&lt;section aria-labelledby="noticia-3418"&gt;        ← id estable, también en la URL
+  &lt;p id="noticia-3418" class="media-heading h4"&gt;
+    &lt;a href="/noticias/3418/"&gt;El Parlamento de Canarias ilumina…&lt;/a&gt;
+  &lt;/p&gt;
+  &lt;p class="fecha-noticia"&gt;24/jul/2026&lt;/p&gt;              ← mes abreviado en español
+  &lt;p&gt;La acción se lleva a cabo a petición de…&lt;/p&gt;      ← entradilla completa, sin truncar
+&lt;/section&gt;</code></pre>
+    <p>Dos ventajas frente a Gobcan: el identificador numérico va en la propia URL, lo que da una clave de
+       deduplicación natural, y <b>la entradilla del listado ya viene completa</b> —ninguna vacía en las 15
+       noticias de julio—, así que no hace falta visitar cada noticia para obtenerla. La noticia individual
+       confirma el dato en <span class="mono">&lt;section class="entradilla"&gt;</span>.</p>
+    <p>Dos cautelas: la fecha usa mes abreviado en español (<span class="mono">jul</span>), que requiere un mapeo
+       explícito y no <span class="mono">strptime</span> con locale del sistema —rompería en el runner de GitHub
+       Actions—; y su <span class="mono">robots.txt</span> declara <span class="mono">Crawl-delay: 3</span> y
+       prohíbe <span class="mono">/api/</span> y <span class="mono">/api2/</span>. Ambas cosas se han respetado en
+       este reconocimiento y deben respetarse en el extractor.</p>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">2.2 &nbsp;El problema: <span style="color:var(--red-dark)">esta URL no publica actividad legislativa</span></h3>
+    <p>Descargué los 19 meses disponibles entre enero de 2025 y julio de 2026: <b>231 noticias, 12,2 al mes,
+       0,40 al día</b>. Al buscar menciones a grupos parlamentarios en titular y entradilla, el resultado fue
+       inequívoco:</p>
+
+    <div class="aviso rojo">
+      <span class="t">3 de 231 noticias mencionan un grupo parlamentario (1,3%)</span>
+      <p>Una a AHI, una al Grupo Socialista, una a Vox. El resto son iluminaciones de la fachada por días
+         conmemorativos, homenajes, visitas institucionales, videopodcasts y encuentros de la Presidencia de la
+         Cámara. En el muestreo de noticias individuales, <b>las ocho consultadas tenían el mismo valor en el campo
+         Fuente: «Presidencia»</b> —el gabinete de comunicación de la Cámara, no el grupo proponente.</p>
+    </div>
+
+    <p>Esto no es un defecto del extractor que íbamos a escribir: es que la fuente elegida en la guía no contiene
+       el dato. Afecta directamente a tres decisiones ya escritas:</p>
+    <ul>
+      <li>El <b>caso de uso 1</b> —título, fecha, grupos que votan a favor, en contra y abstenciones— no es
+          alcanzable. Las votaciones no se publican en noticias.</li>
+      <li>El <b>filtro por grupo parlamentario proponente</b> de la interfaz se quedaría sin valores en el 98,7%
+          de los registros.</li>
+      <li>El campo <span class="mono">grupo_parlamentario</span> del modelo de datos sería nulo casi siempre.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">2.3 &nbsp;La fuente correcta existe: <span class="mono">/iniciativas/</span></h3>
+    <p>Buscando en el mapa de secciones del portal aparece <b>Consulta de iniciativas</b>, un formulario POST
+       contra <span class="mono">/iniciativas/index.py</span> con exactamente los campos que el diseño necesita:</p>
+    <div class="tabla-wrap">
+      <table>
+        <thead><tr><th style="width:150px">Campo</th><th>Contenido</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">LEGIS</td><td>Legislatura (8 opciones, de la IV a la XI, más «Todas»)</td></tr>
+          <tr><td class="mono">TIPO</td><td><b>100 tipos de iniciativa</b>: comparecencias en pleno y comisión, comunicaciones del Gobierno, proposiciones no de ley, preguntas, proyectos de ley…</td></tr>
+          <tr><td class="mono tl">PROPONENTE</td><td><b>El grupo o persona que impulsa la iniciativa</b> — el dato que falta en noticias</td></tr>
+          <tr><td class="mono">SITUACION</td><td>En trámite / concluida / todas</td></tr>
+          <tr><td class="mono">EXTRACTO · rango</td><td>Búsqueda por texto y por rango de fechas</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Existen además <span class="mono">/leyes/</span> («Leyes en tramitación») y <span class="mono">/pub/</span>
+       (Boletín Oficial del Parlamento), que cubrirían el seguimiento normativo.</p>
+    <div class="aviso ambar">
+      <span class="t">No he avanzado más aquí, y quiero decir por qué</span>
+      <p>Parcan está fuera del alcance de esta sesión, así que me he detenido en confirmar que la fuente correcta
+         existe y qué campos ofrece. <b>No he caracterizado su paginación, su formato de resultados ni su coste de
+         extracción</b>: eso es trabajo de un reconocimiento propio antes de escribir ese extractor. Lo que sí
+         quería es que la decisión de qué fuente usar la tomes antes de que el modelo de datos se cierre en torno
+         a una fuente que no tiene el dato.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. IMPLICACIONES ============ -->
+<section class="bloque">
+  <div class="section-label">
+    <span class="pill">Implicaciones</span>
+    <span class="label-text">Lo que el reconocimiento cambia en el modelo de datos</span>
+  </div>
+
+  <div class="card">
+    <p style="margin-top:0">No propongo aquí el esquema completo —eso es el Hito 4 y espera tu visto bueno—, pero
+       tres campos previstos necesitan una decisión que solo se puede tomar con estos datos delante.</p>
+
+    <h4>El territorio no está publicado: hay que derivarlo</h4>
+    <p>La guía preveía anotar el territorio en la entradilla. La fuente no lo trae como campo. Sí existen etiquetas
+       de isla, pero <b>solo cubren el 4% de las entradas</b> del último mes, y con inconsistencias de
+       normalización —conviven «gran canaria» y «Gran Canaria» como etiquetas distintas—. El portal tiene 18.213
+       etiquetas en total: es una folksonomía libre, no un vocabulario controlado.</p>
+    <p>Derivarlo del texto funciona mejor: buscando las ocho islas en título y entradilla sobre 400 entradas,
+       <span class="tl">el 47% menciona al menos una</span> (Gran Canaria 81, Tenerife 71, Fuerteventura 25,
+       La Palma 21, Lanzarote 20, El Hierro 17, La Gomera 12, La Graciosa 6), 33 mencionan varias y el 53%
+       restante no cita ninguna. Propongo derivarlo con diccionario cerrado, usar «Canarias» como valor por
+       defecto y <b>añadir un campo de procedencia del dato</b> —explícito o inferido— para que quien consulte
+       sepa cuándo el territorio es una inferencia nuestra y no un dato de la fuente.</p>
+
+    <h4>El área secundaria casi no existe a nivel de consejería</h4>
+    <p>De 562 entradas útiles, 481 tienen exactamente una consejería, 2 tienen dos y 79 no tienen ninguna.
+       El campo <span class="mono">areas</span> como lista de consejerías secundarias estaría vacío en el 99,6%
+       de los casos. Donde sí hay riqueza es en las <b>subcategorías</b> (Actualidad Sanitaria, Hospitales,
+       Hemodonación, Cultura…). Merece la pena decidir si <span class="mono">areas</span> recoge eso en lugar de
+       consejerías secundarias, o si se elimina.</p>
+
+    <h4>Un 14% de las entradas útiles no tiene consejería asignada</h4>
+    <p>Son sobre todo de Presidencia —que es categoría raíz, no hija de «Consejerías»— y de entes instrumentales
+       con categoría propia: PROEXCA, el Servicio de Urgencias Canario, el Comisionado del Régimen Económico y
+       Fiscal. El vocabulario cerrado necesita una entrada explícita para estos casos; dejarlos como nulos
+       silenciosos los haría invisibles en cualquier filtro por área.</p>
+  </div>
+</section>
+
+<!-- ============ 4. CUESTIONAMIENTOS ============ -->
+<section class="bloque">
+  <div class="section-label">
+    <span class="pill">Lo que pediste que cuestionara</span>
+    <span class="label-text">Supuestos que el reconocimiento no sostiene</span>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">4.1 &nbsp;«Tiempo real»: qué cadencia propongo</h3>
+    <p>Tienes razón en la sospecha. GitHub Actions solo ofrece <span class="mono">cron</span>, el mínimo es de
+       5 minutos y en la práctica los intervalos cortos <b>se retrasan de forma rutinaria entre 5 y 15 minutos</b>
+       —y más en horas punta— porque los trabajos programados tienen la prioridad más baja de la cola. Un cron de
+       5 minutos no da latencia de 5 minutos: da latencia impredecible y consume 288 ejecuciones diarias para
+       encontrar, la mayoría de las veces, cero entradas nuevas.</p>
+    <p>Pero el dato relevante es otro: <b>el portal publica en horario de oficina</b>. El 86% de las entradas
+       aparece entre las 09:00 y las 15:00, con el máximo a las 13:00 (gráfico 2). Fuera de esa franja el
+       rendimiento de cualquier ejecución es casi nulo.</p>
+    <div class="reco">
+      <p style="margin:0"><b>Propuesta:</b> cron cada 30 minutos entre las 08:00 y las 20:00 hora canaria de lunes
+         a viernes, más una pasada de cierre diaria a las 22:00 que recoja lo que se haya publicado fuera de
+         franja y capture ediciones posteriores vía <code>modified_after</code>. Son unas 25 ejecuciones diarias
+         frente a 288, con una latencia máxima de 30 minutos en la ventana en que realmente se publica. Dado que
+         el destino es una alerta por correo que alguien leerá cuando abra la bandeja, la diferencia entre 5 y 30
+         minutos no cambia ninguna decisión del observatorio.</p>
+    </div>
+    <p style="margin-top:16px">Si en algún momento hiciera falta latencia realmente baja, las alternativas son un
+       runner propio con <span class="mono">systemd timer</span> o una función programada en Supabase
+       (<span class="mono">pg_cron</span> + Edge Function), que no dependen de la cola de GitHub. Ninguna de las
+       dos me parece justificada hoy: añaden infraestructura que mantener para ganar minutos que nadie va a usar.</p>
+  </div>
+
+  <div class="decision">
+    <span class="num">Supuesto 2</span>
+    <h4>El scraping no es necesario en Gobcan</h4>
+    <p>La guía da por hecho que «el scraping es necesario» y dedica un apartado a elegir entre Playwright y
+       nodriver. Con la API REST abierta, esa decisión se vuelve innecesaria para esta fuente. Mantener Playwright
+       aquí significaría instalar un navegador en cada ejecución de GitHub Actions —unos 300 MB y un par de
+       minutos— para obtener datos peor estructurados que los que devuelve una petición HTTP de 0,8 segundos.</p>
+    <div class="reco"><p style="margin:0"><b>Propuesta:</b> <span class="mono">httpx</span> contra la API como
+      extractor principal; Playwright se queda en el repositorio, documentado y probado, como plan B activable si
+      la API se cierra. La comparación Playwright/nodriver de la guía sigue siendo válida, pero se aplica a Parcan,
+      no a Gobcan.</p></div>
+  </div>
+
+  <div class="decision">
+    <span class="num">Supuesto 3</span>
+    <h4>El volumen estimado se queda corto y arrastra al diseño de las alertas</h4>
+    <p>2–5 entradas diarias frente a 15,6 medidas. No es un problema de almacenamiento —siguen siendo cifras
+       pequeñas—, pero sí de diseño del producto: <b>una alerta por correo por cada entrada publicada son 15
+       correos diarios</b>, y eso deja de leerse en una semana.</p>
+    <div class="reco"><p style="margin:0"><b>Propuesta:</b> cuando abordemos las alertas, digest agrupado por
+      franjas en lugar de correo por entrada, con aviso inmediato reservado a un subconjunto definido por área o
+      por palabra clave. Lo anoto ahora porque condiciona el modelo de datos: hará falta marcar qué entradas se
+      han notificado ya y en qué envío.</p></div>
+  </div>
+
+  <div class="decision">
+    <span class="num">Supuesto 4</span>
+    <h4>«Portal de Transparencia» y portal de noticias no son lo mismo</h4>
+    <p>El resumen de la guía dice que la herramienta detectará «notas y documentos publicados en el Portal de
+       Transparencia del Gobierno de Canarias». Las dos fuentes inventariadas en el apartado 1.3 no son portales
+       de transparencia: son portales de <b>comunicación institucional</b>. Publican lo que cada gabinete decide
+       contar, con el enfoque con que decide contarlo.</p>
+    <p>No es un motivo para cambiar de fuente —el seguimiento de la comunicación oficial tiene valor propio y es
+       exactamente el «resorte de detección» que describe el apartado 1.1—, pero sí para <b>nombrar bien lo que
+       hacemos</b>: la herramienta detecta actividad comunicada, no actividad ejecutiva completa. Que una medida
+       no aparezca aquí no significa que no exista. Merece una línea explícita en el README y, más adelante, en la
+       documentación pública, para que el equipo no lea ausencia de nota como ausencia de acción.</p>
+  </div>
+</section>
+
+<!-- ============ 5. DECISIONES ============ -->
+<section class="bloque">
+  <div class="section-label">
+    <span class="pill">Antes de seguir</span>
+    <span class="label-text">Cinco decisiones que necesito de ti</span>
+  </div>
+
+  <div class="card">
+    <p style="margin-top:0">Ninguna está resuelta en la guía ni en el encargo, y las cinco condicionan el Hito 2.
+       Me detengo aquí hasta tener respuesta.</p>
+    <ol>
+      <li><b>Fuente del Parlamento.</b> ¿Sustituimos <span class="mono">/noticias/</span> por
+          <span class="mono">/iniciativas/</span>, mantenemos las dos con propósitos distintos, o dejo Parcan
+          congelado hasta que decidas? Mi recomendación: mantener noticias como fuente secundaria de actos
+          institucionales y hacer de iniciativas la fuente principal de actividad parlamentaria, con un
+          reconocimiento propio antes de escribir nada.</li>
+      <li><b>Exclusión del 112 y avisos meteorológicos.</b> ¿Los excluyo en origen —mi recomendación, registrando
+          el motivo del descarte en logs— o los guardo con una marca para poder filtrarlos después?</li>
+      <li><b>Vocabulario de áreas.</b> Necesito el fichero de correspondencias de la herramienta de cargos
+          políticos para alinear la nomenclatura en lugar de inventar una paralela. ¿Dónde está y en qué formato?</li>
+      <li><b>Profundidad de la carga histórica.</b> Hay 41.223 entradas desde hace más de una década, con varias
+          legislaturas y nomenclaturas. ¿Cargamos todo, la legislatura actual desde 2023 —mi recomendación, por
+          coherencia del vocabulario— o solo desde ahora?</li>
+      <li><b>Cadencia.</b> ¿Confirmas la propuesta de cada 30 minutos en franja laboral más cierre diario?</li>
+    </ol>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>Hito 1 · Reconocimiento de fuentes &nbsp;·&nbsp; <b>ODESOCAN</b></span>
+    <span>Observatorio de Derechos Sociales de Canarias &nbsp;·&nbsp; 27 de julio de 2026</span>
+  </div>
+</footer>
