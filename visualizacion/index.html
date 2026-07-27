@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transparencia Gobcan · ODESOCAN</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --teal:#00C8B4; --teal-dark:#009E8E; --teal-light:#E0FAF7;
+  --navy-dark:#0D1B2A; --navy-mid:#1A2F45; --navy-deep:#0F3460;
+  --violeta:#7C5CE6; --violeta-claro:#F0EBFD;
+  --off-white:#F5F8FA; --text-main:#1A2F45; --text-muted:#6B8CA5;
+  --border-soft:#E4EDF5; --red:#FF4757;
+  --grid:#EEF3F8;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--off-white);color:var(--text-main);
+     font-family:'Inter',system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+@media(min-width:640px){.wrap{padding:0 32px}}
+h1,h2,h3{font-family:'Space Grotesk',sans-serif;margin:0}
+a{color:var(--teal-dark)}
+.label{font-family:'Space Grotesk';font-size:10px;font-weight:700;
+       text-transform:uppercase;letter-spacing:.12em;color:var(--text-muted)}
+
+/* ---------- cabecera ---------- */
+.hero{background:linear-gradient(145deg,#0D1B2A 0%,#1A2F45 60%,#0F3460 100%);
+      position:relative;overflow:hidden;padding:30px 0 26px}
+.hero::before{content:'';position:absolute;width:420px;height:420px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,200,180,.22),transparent 70%);top:-210px;right:-110px}
+.hero .wrap{position:relative;z-index:1}
+.hero .label{color:rgba(255,255,255,.5)}
+.hero h1{color:#fff;font-size:clamp(1.35rem,2.8vw,1.85rem);font-weight:700;margin:8px 0 4px}
+.hero h1 em{font-style:normal;color:var(--teal)}
+.hero p{color:rgba(255,255,255,.6);font-size:.86rem;margin:0}
+
+/* ---------- barra de filtros ---------- */
+.filtros{background:#fff;border-bottom:1px solid var(--border-soft);
+         position:sticky;top:0;z-index:20;box-shadow:0 1px 12px rgba(13,27,42,.05)}
+.filtros .wrap{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding-top:12px;padding-bottom:12px}
+.conmutador{display:inline-flex;background:var(--off-white);border-radius:99px;padding:3px;gap:2px}
+.conmutador button{font-family:'Space Grotesk';font-weight:700;font-size:12px;border:0;
+  background:transparent;color:var(--text-muted);padding:7px 15px;border-radius:99px;cursor:pointer;
+  transition:background .15s,color .15s}
+.conmutador button[aria-pressed="true"]{background:var(--navy-dark);color:#fff}
+.conmutador button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+.campo{position:relative;display:flex;align-items:center}
+input[type=search],input[type=date],select{
+  font-family:'Inter';font-size:13px;color:var(--text-main);background:var(--off-white);
+  border:1px solid var(--border-soft);border-radius:10px;padding:9px 12px;min-height:38px}
+input[type=search]{min-width:230px}
+input[type=search]:focus,input[type=date]:focus,select:focus{
+  outline:none;border-color:var(--teal);background:#fff;box-shadow:0 0 0 3px rgba(0,200,180,.14)}
+select{cursor:pointer;max-width:230px}
+.solo-alertas{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;
+  font-family:'Space Grotesk';font-weight:600;color:var(--text-muted);cursor:pointer;
+  padding:8px 13px;border:1px solid var(--border-soft);border-radius:10px;background:var(--off-white)}
+.solo-alertas input{accent-color:var(--teal-dark);width:15px;height:15px;cursor:pointer}
+.solo-alertas.activo{background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark)}
+.btn-limpiar{font-family:'Space Grotesk';font-weight:700;font-size:12px;border:0;background:transparent;
+  color:var(--text-muted);cursor:pointer;padding:8px 6px;text-decoration:underline}
+.btn-limpiar:hover{color:var(--red)}
+
+/* ---------- gráfico ---------- */
+.chart-container{background:#fff;border-radius:16px;border:1px solid rgba(13,27,42,.08);
+  padding:18px 20px 10px;margin:20px 0 16px}
+.chart-cab{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.chart-tit{font-family:'Space Grotesk';font-weight:700;color:var(--navy-mid);font-size:.98rem}
+.chart-sub{font-size:.8rem;color:var(--text-muted);margin-top:2px}
+.leyenda{display:flex;gap:14px;flex-wrap:wrap}
+.leyenda span{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-main);
+  font-family:'Space Grotesk';font-weight:600}
+.leyenda i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.eje text{fill:var(--text-muted);font-size:10px;font-family:'Inter'}
+.eje .domain{display:none}
+.eje line{stroke:var(--grid)}
+.barra{cursor:pointer}
+.barra:hover{opacity:.78}
+
+/* ---------- resultados ---------- */
+.resumen{display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+  flex-wrap:wrap;margin:22px 0 12px}
+.resumen .n{font-family:'Space Grotesk';font-weight:700;font-size:1.05rem;color:var(--navy-mid)}
+.resumen .n b{color:var(--teal-dark)}
+
+.tarjeta{background:#fff;border:1px solid var(--border-soft);border-radius:14px;
+  padding:17px 19px;margin-bottom:11px;transition:box-shadow .16s,transform .16s}
+.tarjeta:hover{box-shadow:0 6px 22px rgba(13,27,42,.09);transform:translateY(-1px)}
+.tarjeta .origen{font-family:'Space Grotesk';font-size:10px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase}
+.origen.gob{color:var(--teal-dark)}
+.origen.par{color:var(--violeta)}
+.tarjeta h3{font-size:1rem;font-weight:700;color:var(--navy-mid);line-height:1.38;margin:5px 0 7px}
+.tarjeta h3 a{color:inherit;text-decoration:none}
+.tarjeta h3 a:hover{color:var(--teal-dark)}
+.meta{font-size:12px;color:var(--text-muted);margin-bottom:9px}
+.meta strong{color:var(--navy-mid);font-weight:600}
+.entradilla{font-size:13.5px;color:var(--text-main);line-height:1.62;margin-bottom:11px}
+.pills{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pill{font-family:'Space Grotesk';font-size:10px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;padding:3.5px 10px;border-radius:99px;
+  background:var(--teal-light);color:var(--teal-dark)}
+.pill.alerta{background:rgba(255,71,87,.12);color:#E0394A}
+.pill.tipo{background:var(--violeta-claro);color:var(--violeta)}
+.pill.inferido{background:#fff;border:1px dashed var(--border-soft);color:var(--text-muted)}
+.enlace{font-family:'Space Grotesk';font-weight:700;font-size:12.5px;color:var(--teal-dark);
+  text-decoration:none;white-space:nowrap}
+
+mark{background:rgba(0,200,180,.26);color:inherit;padding:0 1px;border-radius:2px}
+
+/* ---------- paginación ---------- */
+.paginacion{display:flex;justify-content:center;align-items:center;gap:6px;
+  flex-wrap:wrap;margin:22px 0 40px}
+.paginacion button{font-family:'Space Grotesk';font-weight:700;font-size:12.5px;
+  min-width:38px;height:38px;border:1px solid var(--border-soft);background:#fff;
+  color:var(--text-main);border-radius:10px;cursor:pointer;padding:0 11px}
+.paginacion button:hover:not(:disabled){border-color:var(--teal);color:var(--teal-dark)}
+.paginacion button[aria-current="page"]{background:var(--navy-dark);color:#fff;border-color:var(--navy-dark)}
+.paginacion button:disabled{opacity:.35;cursor:default}
+.paginacion .puntos{color:var(--text-muted);padding:0 3px}
+
+.vacio{background:#fff;border:1px dashed var(--border-soft);border-radius:14px;
+  padding:44px 20px;text-align:center;color:var(--text-muted)}
+.vacio strong{display:block;font-family:'Space Grotesk';color:var(--navy-mid);
+  font-size:1.02rem;margin-bottom:5px}
+
+#tooltip{position:fixed;pointer-events:none;opacity:0;transition:opacity .12s;
+  background:var(--navy-dark);color:#fff;border:1px solid rgba(0,200,180,.2);
+  border-radius:9px;padding:9px 12px;font-size:12px;z-index:60;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+#tooltip .t{font-family:'Space Grotesk';font-weight:700;color:var(--teal);
+  font-size:11px;margin-bottom:4px}
+#tooltip div{display:flex;justify-content:space-between;gap:14px}
+
+.cargando{text-align:center;padding:60px 20px;color:var(--text-muted)}
+
+/* ---------- modo oscuro ----------
+   Pasos propios, no una inversión automática: sobre fondo oscuro la banda de
+   luminosidad válida es más estrecha (L 0,48–0,67) y el teal corporativo se
+   sale por arriba. Se baja a #00A896, que pasa las seis comprobaciones del
+   validador contra la superficie #152233 y conserva la separación para
+   daltonismo (ΔE 20,2 deutan). Verificado, no estimado a ojo.              */
+@media (prefers-color-scheme: dark){
+  :root{
+    --teal:#00A896; --teal-dark:#3FD5C3; --teal-light:rgba(0,168,150,.18);
+    --violeta:#7C5CE6; --violeta-claro:rgba(124,92,230,.2);
+    --off-white:#0D1B2A; --text-main:#DCE6EF; --text-muted:#8FA9BF;
+    --border-soft:#22354C; --grid:#1E3047;
+    --superficie:#152233;
+  }
+  body{background:var(--off-white)}
+  .filtros,.chart-container,.tarjeta,.paginacion button,.vacio{
+    background:var(--superficie);border-color:var(--border-soft)}
+  .filtros{box-shadow:0 1px 12px rgba(0,0,0,.35)}
+  input[type=search],input[type=date],select,.solo-alertas{
+    background:#0D1B2A;border-color:var(--border-soft);color:var(--text-main)}
+  input[type=search]:focus,input[type=date]:focus,select:focus{background:#0D1B2A}
+  .conmutador{background:#0D1B2A}
+  .conmutador button[aria-pressed="true"]{background:var(--teal);color:#06131F}
+  .tarjeta h3,.resumen .n,.chart-tit,.vacio strong{color:var(--text-main)}
+  .meta strong{color:var(--text-main)}
+  .entradilla{color:#C3D3E0}
+  .paginacion button{color:var(--text-main)}
+  .paginacion button[aria-current="page"]{background:var(--teal);color:#06131F;border-color:var(--teal)}
+  .origen.gob{color:#3FD5C3}
+  .pill{background:rgba(0,168,150,.18);color:#3FD5C3}
+  .pill.tipo{background:rgba(124,92,230,.22);color:#B9A3FF}
+  .pill.alerta{background:rgba(255,71,87,.2);color:#FF8A94}
+  .enlace{color:#3FD5C3}
+  mark{background:rgba(0,168,150,.35);color:#EAF6F4}
+  .eje text{fill:var(--text-muted)}
+  footer{background:#06131F}
+  .hero{background:linear-gradient(145deg,#06131F 0%,#0D1B2A 60%,#0F3460 100%)}
+}
+footer{background:var(--navy-dark);color:var(--text-muted);padding:22px 0;font-size:.78rem}
+footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+footer b{color:#fff;font-family:'Space Grotesk'}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--teal);border-radius:99px}
+@media(max-width:640px){
+  .filtros .wrap{gap:8px}
+  input[type=search]{min-width:100%;flex:1 1 100%}
+}
+</style>
+</head>
+<body data-palette="#00C8B4,#7C5CE6">
+
+<header class="hero">
+  <div class="wrap">
+    <div class="label">ODESOCAN · Observatorio de Derechos Sociales de Canarias</div>
+    <h1>Actividad <em>ejecutiva y parlamentaria</em> de Canarias</h1>
+    <p id="cobertura">Cargando datos…</p>
+  </div>
+</header>
+
+<div class="filtros">
+  <div class="wrap">
+    <div class="conmutador" role="group" aria-label="Fuente">
+      <button data-fuente="todo" aria-pressed="true">Todo</button>
+      <button data-fuente="0" aria-pressed="false">Gobierno</button>
+      <button data-fuente="1" aria-pressed="false">Parlamento</button>
+    </div>
+
+    <div class="campo">
+      <input type="search" id="buscar" placeholder="Buscar por palabra clave…"
+             aria-label="Buscar por palabra clave">
+    </div>
+
+    <input type="date" id="desde" aria-label="Desde">
+    <input type="date" id="hasta" aria-label="Hasta">
+
+    <select id="dimension" aria-label="Área o grupo parlamentario"></select>
+
+    <label class="solo-alertas" id="lab-alertas">
+      <input type="checkbox" id="solo-alertas"> Solo decisiones
+    </label>
+
+    <button class="btn-limpiar" id="limpiar">Limpiar</button>
+  </div>
+</div>
+
+<main class="wrap">
+  <figure class="chart-container" style="margin-left:0;margin-right:0">
+    <div class="chart-cab">
+      <div>
+        <div class="chart-tit">Publicaciones por mes</div>
+        <div class="chart-sub" id="chart-sub">Sobre el resultado filtrado</div>
+      </div>
+      <div class="leyenda" id="leyenda"></div>
+    </div>
+    <div id="grafico"></div>
+  </figure>
+
+  <div class="resumen">
+    <div class="n" id="contador">—</div>
+    <div class="label" id="orden">Más recientes primero</div>
+  </div>
+
+  <div id="listado"><div class="cargando">Cargando…</div></div>
+  <nav class="paginacion" id="paginacion" aria-label="Paginación"></nav>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span><b>transparencia-gobcan</b> · datos del Gobierno y el Parlamento de Canarias</span>
+    <span id="pie-version"></span>
+  </div>
+</footer>
+
+<div id="tooltip" role="status" aria-live="polite"></div>
+
+<script src="d3.v7.min.js"></script>
+<script>
+"use strict";
+
+// Los pasos del gráfico salen del CSS, así que el modo oscuro usa los suyos
+// —validados aparte contra la superficie oscura— en vez de invertir los claros.
+function pasos(){
+  const oscuro = matchMedia("(prefers-color-scheme: dark)").matches;
+  return oscuro ? {gobierno: "#00A896", parlamento: "#7C5CE6"}
+                : {gobierno: "#00C8B4", parlamento: "#7C5CE6"};
+}
+let COLOR = pasos();
+const POR_PAGINA = 10;
+const MESES = ["enero","febrero","marzo","abril","mayo","junio",
+               "julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+let DATOS = null, C = {}, FILAS = [], filtradas = [], pagina = 1;
+const estado = {fuente: "todo", texto: "", desde: "", hasta: "", dimension: "", soloAlertas: false};
+
+// El índice de cada campo se lee de la cabecera del fichero, así que añadir
+// columnas nuevas al final del volcado no rompe la interfaz.
+let IDX = {};
+
+d3.json("datos.json").then(d => {
+  DATOS = d;
+  C = d.catalogos;
+  d.campos.forEach((nombre, i) => IDX[nombre] = i);
+  FILAS = d.filas;
+
+  document.getElementById("cobertura").textContent =
+    `${FILAS.length.toLocaleString("es-ES")} publicaciones · de ${fechaLarga(FILAS[FILAS.length-1][IDX.fecha])} a ${fechaLarga(FILAS[0][IDX.fecha])}`;
+  document.getElementById("pie-version").textContent = `v${d.version}`;
+
+  poblarDimension();
+  aplicar();
+}).catch(e => {
+  document.getElementById("listado").innerHTML =
+    `<div class="vacio"><strong>No se han podido cargar los datos</strong>
+     Comprueba que <code>datos.json</code> está junto a este fichero.<br>
+     <span style="font-size:.8rem">${e.message}</span></div>`;
+});
+
+function fechaLarga(iso){
+  const [a,m,d] = iso.split("-").map(Number);
+  return `${d} de ${MESES[m-1]} de ${a}`;
+}
+function fechaCorta(iso){
+  const [a,m,d] = iso.split("-").map(Number);
+  return `${d} ${MESES[m-1].slice(0,3)} ${a}`;
+}
+function mesLargo(clave){
+  const [a,m] = clave.split("-").map(Number);
+  return `${MESES[m-1]} de ${a}`;
+}
+function normalizar(s){
+  return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+}
+
+/* ------------------------------------------------------------------
+   El selector cambia de contenido según la fuente: en el Gobierno se
+   filtra por área y en el Parlamento por grupo parlamentario, que es
+   justo lo que pedía el caso de uso 2 de la guía.
+------------------------------------------------------------------ */
+function poblarDimension(){
+  const sel = document.getElementById("dimension");
+  const esParlamento = estado.fuente === "1";
+  const lista = esParlamento
+    ? C.grupo.map((g,i) => ({v: "g"+i, t: g}))
+    : C.area.map((a,i) => ({v: "a"+i, t: DATOS.nombres_area[a] || a}));
+  lista.sort((x,y) => x.t.localeCompare(y.t,"es"));
+
+  sel.innerHTML = `<option value="">${esParlamento ? "Todos los grupos" : "Todas las áreas"}</option>`
+    + lista.map(o => `<option value="${o.v}">${o.t}</option>`).join("");
+  sel.value = "";
+  estado.dimension = "";
+}
+
+function filtrar(){
+  const texto = normalizar(estado.texto).trim();
+  const palabras = texto ? texto.split(/\s+/) : [];
+
+  return FILAS.filter(f => {
+    if (estado.fuente !== "todo" && String(f[IDX.fuente]) !== estado.fuente) return false;
+    if (estado.soloAlertas && !f[IDX.alerta]) return false;
+    if (estado.desde && f[IDX.fecha] < estado.desde) return false;
+    if (estado.hasta && f[IDX.fecha] > estado.hasta) return false;
+
+    if (estado.dimension){
+      const tipo = estado.dimension[0], i = +estado.dimension.slice(1);
+      if (tipo === "a" && f[IDX.area] !== i) return false;
+      if (tipo === "g" && f[IDX.grupo] !== i) return false;
+    }
+
+    if (palabras.length){
+      const heno = normalizar(f[IDX.titulo] + " " + f[IDX.entrada]);
+      // Todas las palabras deben aparecer: buscar "vivienda lanzarote" no
+      // debe devolver todo lo de vivienda más todo lo de Lanzarote.
+      if (!palabras.every(p => heno.includes(p))) return false;
+    }
+    return true;
+  });
+}
+
+function aplicar(){
+  filtradas = filtrar();
+  pagina = 1;
+  pintarGrafico();
+  pintarListado();
+}
+
+/* ------------------------------------------------------------------
+   Gráfico de actividad. Se recalcula sobre el resultado filtrado, lo que
+   resuelve de paso el problema de escala: el Parlamento publica 23 veces
+   menos que el Gobierno y en un eje compartido sería una línea invisible,
+   pero al filtrar por fuente el eje se reescala y se lee bien.
+------------------------------------------------------------------ */
+function pintarGrafico(){
+  const porMes = d3.rollup(filtradas, v => ({
+    gobierno: v.filter(f => f[IDX.fuente] === 0).length,
+    parlamento: v.filter(f => f[IDX.fuente] === 1).length,
+  }), f => f[IDX.fecha].slice(0,7));
+
+  const meses = DATOS.actividad.map(a => a.mes);
+  const datos = meses.map(m => ({
+    mes: m,
+    gobierno: porMes.get(m)?.gobierno ?? 0,
+    parlamento: porMes.get(m)?.parlamento ?? 0,
+  }));
+
+  const cont = document.getElementById("grafico");
+  cont.innerHTML = "";
+  const ancho = cont.clientWidth || 900;
+  const alto = 132, m = {arriba: 8, derecha: 4, abajo: 22, izquierda: 34};
+
+  const svg = d3.select(cont).append("svg")
+    .attr("width", ancho).attr("height", alto)
+    .attr("role", "img")
+    .attr("aria-label", "Publicaciones por mes según la fuente");
+
+  const x = d3.scaleBand().domain(meses)
+    .range([m.izquierda, ancho - m.derecha]).padding(0.22);
+  const maximo = d3.max(datos, d => d.gobierno + d.parlamento) || 1;
+  const y = d3.scaleLinear().domain([0, maximo]).nice()
+    .range([alto - m.abajo, m.arriba]);
+
+  // Rejilla recesiva, sin línea de dominio
+  svg.append("g").attr("class","eje")
+    .attr("transform", `translate(${m.izquierda},0)`)
+    .call(d3.axisLeft(y).ticks(3).tickSize(-(ancho - m.izquierda - m.derecha)))
+    .call(g => g.selectAll(".tick line").attr("stroke", "var(--grid)"));
+
+  // Una etiqueta cada tres meses: con 39 meses, todas se solaparían. El año se
+  // escribe en la primera etiqueta de cada año, porque la serie arranca en mayo
+  // y los eneros nunca caen en múltiplos de tres: sin esto el eje decía
+  // "may ago nov feb may…" y no había forma de saber de qué año era cada barra.
+  const visibles = meses.filter((_, i) => i % 3 === 0);
+  const primerTickDelAnio = new Set();
+  let anioPrevio = null;
+  visibles.forEach(v => {
+    const a = v.slice(0, 4);
+    if (a !== anioPrevio) { primerTickDelAnio.add(v); anioPrevio = a; }
+  });
+
+  svg.append("g").attr("class","eje")
+    .attr("transform", `translate(0,${alto - m.abajo})`)
+    .call(d3.axisBottom(x).tickSize(0).tickPadding(7)
+      .tickValues(visibles)
+      .tickFormat(v => {
+        const [a, mm] = v.split("-");
+        const mes = MESES[+mm - 1].slice(0, 3);
+        return primerTickDelAnio.has(v) ? `${mes} ${a.slice(2)}` : mes;
+      }))
+    .call(g => g.selectAll(".tick text")
+      .filter(d => primerTickDelAnio.has(d))
+      .attr("font-weight", 600)
+      .attr("fill", "var(--navy-mid)"));
+
+  const series = d3.stack().keys(["gobierno","parlamento"])(datos);
+  const color = {gobierno: COLOR.gobierno, parlamento: COLOR.parlamento};
+
+  svg.append("g").selectAll("g").data(series).join("g")
+    .attr("fill", d => color[d.key])
+    .selectAll("rect").data(d => d.map(v => ({...v, key: d.key}))).join("rect")
+      .attr("class","barra")
+      .attr("x", d => x(d.data.mes))
+      .attr("width", x.bandwidth())
+      .attr("y", d => y(d[1]))
+      // 2px de separación entre segmentos apilados, según la guía de marcas
+      .attr("height", d => Math.max(0, y(d[0]) - y(d[1]) - (d.key === "gobierno" ? 2 : 0)))
+      .attr("rx", 2)
+      .on("pointerenter", (ev, d) => mostrarTooltip(ev, d.data))
+      .on("pointermove", moverTooltip)
+      .on("pointerleave", ocultarTooltip);
+
+  // Leyenda: obligatoria con dos series
+  document.getElementById("leyenda").innerHTML =
+    `<span><i style="background:${COLOR.gobierno}"></i> Gobierno</span>
+     <span><i style="background:${COLOR.parlamento}"></i> Parlamento</span>`;
+  document.getElementById("chart-sub").textContent =
+    filtradas.length === FILAS.length ? "Todas las publicaciones"
+                                      : "Sobre el resultado filtrado";
+}
+
+const tooltip = document.getElementById("tooltip");
+function mostrarTooltip(ev, d){
+  tooltip.innerHTML = `<div class="t">${mesLargo(d.mes)}</div>
+    <div><span>Gobierno</span><span>${d.gobierno}</span></div>
+    <div><span>Parlamento</span><span>${d.parlamento}</span></div>`;
+  tooltip.style.opacity = 1;
+  moverTooltip(ev);
+}
+function moverTooltip(ev){
+  const r = tooltip.getBoundingClientRect();
+  let x = ev.clientX + 14, y = ev.clientY - r.height - 10;
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - 14;
+  if (y < 8) y = ev.clientY + 16;
+  tooltip.style.left = x + "px"; tooltip.style.top = y + "px";
+}
+function ocultarTooltip(){ tooltip.style.opacity = 0; }
+
+function resaltar(texto){
+  const palabras = normalizar(estado.texto).trim().split(/\s+/).filter(Boolean);
+  if (!palabras.length) return escapar(texto);
+  // Se busca sobre el texto normalizado pero se recorta sobre el original,
+  // para no perder tildes ni mayúsculas en lo que se muestra.
+  const plano = normalizar(texto);
+  const marcas = [];
+  palabras.forEach(p => {
+    let i = plano.indexOf(p);
+    while (i !== -1){ marcas.push([i, i + p.length]); i = plano.indexOf(p, i + p.length); }
+  });
+  if (!marcas.length) return escapar(texto);
+  marcas.sort((a,b) => a[0]-b[0]);
+  let salida = "", cursor = 0;
+  marcas.forEach(([a,b]) => {
+    if (a < cursor) return;
+    salida += escapar(texto.slice(cursor,a)) + "<mark>" + escapar(texto.slice(a,b)) + "</mark>";
+    cursor = b;
+  });
+  return salida + escapar(texto.slice(cursor));
+}
+function escapar(s){
+  return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function pintarListado(){
+  const total = filtradas.length;
+  const paginas = Math.max(1, Math.ceil(total / POR_PAGINA));
+  pagina = Math.min(pagina, paginas);
+  const trozo = filtradas.slice((pagina-1)*POR_PAGINA, pagina*POR_PAGINA);
+
+  document.getElementById("contador").innerHTML = total
+    ? `<b>${total.toLocaleString("es-ES")}</b> ${total === 1 ? "publicación" : "publicaciones"}`
+    : "Sin resultados";
+
+  const cont = document.getElementById("listado");
+  if (!total){
+    cont.innerHTML = `<div class="vacio"><strong>No hay publicaciones que coincidan</strong>
+      Prueba a quitar algún filtro o a buscar otra palabra.</div>`;
+    document.getElementById("paginacion").innerHTML = "";
+    return;
+  }
+
+  cont.innerHTML = trozo.map(f => {
+    const esGob = f[IDX.fuente] === 0;
+    const origen = esGob ? "Gobierno de Canarias" : "Parlamento de Canarias";
+    const quien = esGob
+      ? (DATOS.nombres_area[C.area[f[IDX.area]]] || C.area[f[IDX.area]] || "—")
+      : (f[IDX.grupo] !== null ? C.grupo[f[IDX.grupo]] : "Iniciativa del Gobierno");
+    const territorio = f[IDX.territorio] !== null ? C.territorio[f[IDX.territorio]] : "Canarias";
+    const situacion = f[IDX.situacion] !== null ? C.situacion[f[IDX.situacion]] : null;
+    const tipo = f[IDX.tipo] !== null ? C.tipo[f[IDX.tipo]] : null;
+    const materias = (f[IDX.materias]||[]).map(i => C.materias[i]);
+
+    return `<article class="tarjeta">
+      <div class="origen ${esGob ? "gob" : "par"}">${origen}</div>
+      <h3><a href="${escapar(f[IDX.url])}" target="_blank" rel="noopener">${resaltar(f[IDX.titulo])}</a></h3>
+      <div class="meta"><strong>${escapar(quien)}</strong> · ${fechaCorta(f[IDX.fecha])} · ${escapar(territorio)}${situacion ? " · " + escapar(situacion) : ""}</div>
+      <div class="entradilla">${resaltar(f[IDX.entrada])}</div>
+      <div class="pills">
+        ${f[IDX.alerta] ? '<span class="pill alerta">Decisión</span>' : ""}
+        ${tipo ? `<span class="pill tipo">${escapar(tipo)}</span>` : ""}
+        ${materias.map(m => `<span class="pill">${escapar(m.replace(/_/g," "))}</span>`).join("")}
+        <a class="enlace" href="${escapar(f[IDX.url])}" target="_blank" rel="noopener">Ver publicación →</a>
+      </div>
+    </article>`;
+  }).join("");
+
+  pintarPaginacion(paginas);
+}
+
+function pintarPaginacion(paginas){
+  const nav = document.getElementById("paginacion");
+  if (paginas <= 1){ nav.innerHTML = ""; return; }
+  const botones = [];
+  const anadir = n => botones.push(
+    `<button data-p="${n}" ${n === pagina ? 'aria-current="page"' : ""}>${n}</button>`);
+
+  botones.push(`<button data-p="${pagina-1}" ${pagina === 1 ? "disabled" : ""}
+                aria-label="Página anterior">←</button>`);
+  const cerca = new Set([1, paginas, pagina, pagina-1, pagina+1]);
+  let ultima = 0;
+  [...cerca].filter(n => n >= 1 && n <= paginas).sort((a,b) => a-b).forEach(n => {
+    if (n - ultima > 1) botones.push('<span class="puntos">…</span>');
+    anadir(n); ultima = n;
+  });
+  botones.push(`<button data-p="${pagina+1}" ${pagina === paginas ? "disabled" : ""}
+                aria-label="Página siguiente">→</button>`);
+  nav.innerHTML = botones.join("");
+}
+
+/* ---------------------- interacción ---------------------- */
+document.querySelectorAll(".conmutador button").forEach(b => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll(".conmutador button")
+      .forEach(o => o.setAttribute("aria-pressed", String(o === b)));
+    estado.fuente = b.dataset.fuente;
+    poblarDimension();
+    aplicar();
+  });
+});
+
+let temporizador;
+document.getElementById("buscar").addEventListener("input", e => {
+  clearTimeout(temporizador);
+  // Con 16.000 filas, filtrar en cada pulsación se nota al teclear
+  temporizador = setTimeout(() => { estado.texto = e.target.value; aplicar(); }, 180);
+});
+
+["desde","hasta"].forEach(id => {
+  document.getElementById(id).addEventListener("change", e => {
+    estado[id] = e.target.value; aplicar();
+  });
+});
+
+document.getElementById("dimension").addEventListener("change", e => {
+  estado.dimension = e.target.value; aplicar();
+});
+
+document.getElementById("solo-alertas").addEventListener("change", e => {
+  estado.soloAlertas = e.target.checked;
+  document.getElementById("lab-alertas").classList.toggle("activo", e.target.checked);
+  aplicar();
+});
+
+document.getElementById("limpiar").addEventListener("click", () => {
+  Object.assign(estado, {fuente:"todo", texto:"", desde:"", hasta:"", dimension:"", soloAlertas:false});
+  document.getElementById("buscar").value = "";
+  document.getElementById("desde").value = "";
+  document.getElementById("hasta").value = "";
+  document.getElementById("solo-alertas").checked = false;
+  document.getElementById("lab-alertas").classList.remove("activo");
+  document.querySelectorAll(".conmutador button")
+    .forEach(b => b.setAttribute("aria-pressed", String(b.dataset.fuente === "todo")));
+  poblarDimension();
+  aplicar();
+});
+
+document.getElementById("paginacion").addEventListener("click", e => {
+  const b = e.target.closest("button[data-p]");
+  if (!b || b.disabled) return;
+  pagina = +b.dataset.p;
+  pintarListado();
+  document.querySelector(".resumen").scrollIntoView({behavior:"smooth", block:"start"});
+});
+
+// Repintar si el sistema cambia de claro a oscuro mientras la página está abierta
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+  COLOR = pasos();
+  if (DATOS) pintarGrafico();
+});
+
+let redimension;
+addEventListener("resize", () => {
+  clearTimeout(redimension);
+  redimension = setTimeout(pintarGrafico, 150);
+});
+</script>
+</body>
+</html>

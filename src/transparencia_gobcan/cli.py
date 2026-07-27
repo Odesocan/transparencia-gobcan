@@ -563,5 +563,28 @@ def notificar(
         consola.print(f"[green]Aviso enviado[/green] a {mensaje['To']} · {len(filas)} entradas")
 
 
+@app.command()
+def exportar(
+    destino: str = typer.Option(
+        "visualizacion/datos.json", help="Fichero de salida para la interfaz"
+    ),
+) -> None:
+    """Vuelca los datos al fichero que consume la interfaz de consulta.
+
+    La interfaz es estática y lee este fichero: no habla con Supabase, así que
+    no hay que abrir la base al navegador ni escribir políticas de lectura
+    pública. El mismo fichero sirve en local y empotrado en un bloque de Divi.
+    """
+    _configurar_registro()
+    from .carga.exportar import exportar as volcar
+
+    resumen = volcar(pathlib.Path(destino))
+    consola.print(f"[green]Exportadas {resumen['entradas']} entradas[/green] a [cyan]{destino}[/cyan]")
+    consola.print(
+        f"  peso {resumen['peso_mb']} MB · "
+        f"de {resumen['desde']} a {resumen['hasta']} · {resumen['meses']} meses"
+    )
+
+
 if __name__ == "__main__":
     app()
