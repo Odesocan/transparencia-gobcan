@@ -217,6 +217,12 @@ las pruebas cubran las rarezas que las fuentes tienen de verdad.
 El pipeline se rompe cuando la fuente cambia, y la fuente cambia. Lo previsible está
 documentado en [`docs/puntos-de-rotura.md`](docs/puntos-de-rotura.md).
 
+**Qué mirar cada semana, y qué ha fallado ya**, en
+[`docs/vigilancia.md`](docs/vigilancia.md). Los fallos que hemos tenido hasta ahora
+comparten una característica incómoda: el workflow decía «success», los logs no
+registraban ninguna anomalía, y aun así el sistema no hacía su trabajo. Merece la
+pena leerlo antes de fiarse del verde.
+
 Las señales de que el extractor se está degradando **sin fallar** se vigilan desde la tabla
 de logs: caída del porcentaje de entradillas obtenidas del sumario, subida de las entradas
 con área `sin_asignar`, volumen diario muy por debajo de las ~15 entradas esperadas, o

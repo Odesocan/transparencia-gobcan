@@ -138,6 +138,9 @@ declara devuelve `404`.
 
 ## 3. Señales de degradación silenciosa
 
+> Las consultas concretas para revisarlas, y el registro de los fallos que ya
+> han ocurrido, están en [`vigilancia.md`](vigilancia.md).
+
 Un extractor roto rara vez lanza una excepción: sigue devolviendo filas, solo que peores.
 Estas son las señales que hay que vigilar desde `transp_gobcan.logs_ejecucion`, y que
 `transformacion/validacion.py` debe convertir en anomalías registradas:
