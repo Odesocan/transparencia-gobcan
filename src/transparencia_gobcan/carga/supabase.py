@@ -27,9 +27,18 @@ _COLUMNAS = [
     "territorio", "territorio_origen", "grupo_parlamentario", "tipo_iniciativa", "situacion",
     "es_alerta", "motivo_alerta", "materias", "actos", "notificada_en",
 ]
-# Todo salvo la clave y las marcas de creación: si la fuente corrige una nota,
-# queremos el texto nuevo pero conservar cuándo la vimos por primera vez.
-_ACTUALIZABLES = [c for c in _COLUMNAS if c not in ("hash_dedup", "id_fuente", "fuente")]
+# Todo salvo la clave, las marcas de creación y el sello de notificación: si la
+# fuente corrige una nota queremos el texto nuevo, pero conservando cuándo la
+# vimos por primera vez y si ya avisamos de ella.
+#
+# `notificada_en` fuera es lo importante y costó verlo: es estado NUESTRO de
+# envío, no un dato de la fuente. Al incluirlo, cada recorrido nocturno del
+# Parlamento reescribía sus 679 iniciativas con notificada_en a null y borraba
+# el sello de 205 alertas. No llegaron a reenviarse porque ALERTAS_DESDE las
+# filtra por fecha, pero el recuento de pendientes quedaba inservible para
+# vigilar, y una iniciativa con fecha reciente se habría reenviado cada noche.
+_NO_SE_SOBRESCRIBEN = {"hash_dedup", "id_fuente", "fuente", "notificada_en"}
+_ACTUALIZABLES = [c for c in _COLUMNAS if c not in _NO_SE_SOBRESCRIBEN]
 
 
 def conectar():

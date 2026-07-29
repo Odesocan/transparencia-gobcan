@@ -94,8 +94,14 @@ jobs:
           retention-days: 14
           compression-level: 9
 
+      # OJO con la condición. La forma evidente —`inputs.notificar != false`—
+      # está mal: en una ejecución programada `inputs` no existe, y Actions
+      # convierte a número los dos lados al comparar tipos distintos, así que
+      # null y false acaban siendo 0 y la condición resulta FALSA. El paso se
+      # saltaba en todas las ejecuciones automáticas y el aviso nunca salía,
+      # sin que nada fallara. Hay que preguntar primero por el tipo de evento.
       - name: Enviar el aviso de decisiones detectadas
-        if: ${{ inputs.notificar != false }}
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.notificar }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SMTP_HOST: smtp.gmail.com

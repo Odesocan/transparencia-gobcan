@@ -75,3 +75,20 @@ def test_el_registro_guarda_el_motivo_del_descarte():
     assert reg.filas_descartadas == 3
     assert reg.descartes_por_motivo == {"entradilla_vacia": 2, "fecha_fuera_rango": 1}
     assert "entradilla_vacia: id 196122" in reg.anomalias
+
+
+def test_el_upsert_no_sobrescribe_el_sello_de_notificacion():
+    """Regresión: el recorrido nocturno borraba el sello de 205 alertas.
+
+    `notificada_en` es estado nuestro de envío, no un dato de la fuente. Al
+    incluirlo entre las columnas actualizables, cada reproceso lo reescribía a
+    null y el recuento de pendientes quedaba inservible para vigilar. Una
+    iniciativa con fecha reciente se habría reenviado cada noche.
+    """
+    from transparencia_gobcan.carga.supabase import _ACTUALIZABLES, _COLUMNAS
+
+    assert "notificada_en" in _COLUMNAS, "debe seguir escribiéndose al insertar"
+    assert "notificada_en" not in _ACTUALIZABLES, "no debe sobrescribirse al actualizar"
+    # Estas sí se recalculan en cada pasada y deben actualizarse
+    for campo in ("es_alerta", "motivo_alerta", "materias", "actos", "titulo", "entrada"):
+        assert campo in _ACTUALIZABLES, f"{campo} debería actualizarse"
