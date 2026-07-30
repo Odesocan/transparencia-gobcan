@@ -115,6 +115,37 @@ pendientes quedaba inservible para vigilar.
 estado propio. Lo segundo no se sobrescribe nunca al reprocesar. Hoy eso es
 `notificada_en`, `creado_en` y el identificador.
 
+### GitHub no ejecutaba los cron programados, y ajustar horas lo empeoró
+
+*30 de julio de 2026. Cuatro días de datos para entenderlo.*
+
+El síntoma que lo destapó: «no me aparecen ejecuciones a primera hora». Medido,
+el cumplimiento del cron era del 24%, y las 07:00-08:00 UTC eran **cero
+absoluto**. El primer intento de arreglo fue mover los disparos de la mañana a
+las 8:13 y 8:43 UTC, calculando bien la zona horaria pero **sin comprobar si esa
+hora se cumplía**: es justo la peor. Empeoró la situación.
+
+La solución no era ajustar el cron, era dejar de depender de él. Ver
+[`programacion-fiable.md`](programacion-fiable.md).
+
+**Lección**: cuando algo no se ejecuta, medir el cumplimiento POR HORA antes de
+mover horarios. El agregado esconde que unas horas son 0% y otras 25%.
+
+### El token de GitHub: ocho intentos por un 404 que no explicaba nada
+
+*30 de julio de 2026.*
+
+Montar el disparador exigía un token de GitHub, y costó ocho intentos porque
+**GitHub responde 404 a cuatro causas distintas** sin distinguirlas: token mal
+copiado, owner equivocado en la URL, token sin aprobar por la organización, y
+token con el repositorio seleccionado pero sin permisos. La última era la real.
+
+La prueba que lo resuelve —preguntarle al token qué repositorios ve— está en
+[`programacion-fiable.md`](programacion-fiable.md), con la tabla de códigos.
+
+**Lección**: ante un 404 de la API de GitHub, no deducir la causa. Preguntar al
+token qué alcanza y comparar con lo esperado.
+
 ### El extractor de Parcan se comía 50 minutos en cada ejecución manual
 
 *Menor, pero costó 690 peticiones innecesarias a una fuente pública.* La
@@ -143,16 +174,30 @@ punta mundial, que es justo cuando peor se cumple.
 es idempotente, así que una sola ejecución al día dejaría la base completa. Lo
 que se pierde es latencia en el aviso.
 
-El cron actual pide 14 ejecuciones en vez de 26, en minutos no redondos —el
-`:00` y el `:30` son los más congestionados— y con dos intentos en la primera
-hora por si uno se descarta. Pedir menos y que se cumpla es mejor que pedir
-mucho y que se salte.
+**Ya no dependemos de ese cron.** El reloj es `pg_cron` en Supabase, que llama a
+la API de GitHub para lanzar el workflow por `workflow_dispatch` —que sí se
+ejecuta siempre—. El detalle, la configuración del token y la guía de
+diagnóstico están en [`programacion-fiable.md`](programacion-fiable.md).
 
-> **Tarea con fecha: el último domingo de octubre.** El cron va siempre en UTC y
-> no se ajusta al horario de verano. Canarias pasa de UTC+1 a UTC+0, así que las
-> ejecuciones se adelantarán una hora —la primera pasaría de las 9:13 a las
-> 8:13— hasta que se sume una hora a cada expresión de `.github/workflows/`.
-> Y otra vez al revés a finales de marzo.
+El cron de GitHub se deja puesto como red de seguridad: si la base o el token
+fallan, algo seguirá corriendo aunque con mala latencia.
+
+### Cuarta consulta: ¿salen los disparos?
+
+```sql
+SELECT d.id, to_char(d.lanzado_en,'DD/MM HH24:MI') AS lanzado, r.status_code,
+       left(COALESCE(r.content,''), 90) AS respuesta, d.error
+FROM transp_gobcan.disparos d
+LEFT JOIN net._http_response r ON r.id = d.peticion_id
+ORDER BY d.id DESC LIMIT 15;
+```
+
+`status_code = 204` es lo correcto. Un **401** significa casi siempre que **el
+token de GitHub ha caducado**, y eso para la automatización sin que nada avise.
+
+> **Tarea con fecha: el 28 de septiembre de 2026.** Caduca el token de GitHub.
+> Cuando lo haga, los disparos devolverán 401 y dejarán de llegar avisos, sin
+> ningún error visible. Renovarlo y guardarlo con `vault.update_secret`.
 
 ---
 

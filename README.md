@@ -51,16 +51,18 @@ prohibición de sus endpoints `/api/`.
 
 ## Frecuencia de actualización
 
-Cada **30 minutos entre las 08:00 y las 20:00 de lunes a viernes**, más una pasada de cierre
-a las 22:00 (hora canaria).
+Cada **hora a y media, de 9:30 a 20:30 de lunes a viernes**, más un cierre a las 22:00 que
+además recorre el Parlamento. Todo en hora canaria.
 
-No es "tiempo real", y es deliberado. GitHub Actions solo ofrece `cron`, con un mínimo de
-5 minutos y retrasos rutinarios de 5 a 15 en la práctica porque los trabajos programados
-tienen la prioridad más baja de la cola. Además, el portal publica en horario de oficina:
-el 86% de las entradas aparece entre las 09:00 y las 15:00, con el máximo a las 13:00. Un
-cron de 5 minutos daría 288 ejecuciones diarias casi todas vacías y una latencia
-impredecible; esta cadencia da unas 25 ejecuciones y latencia máxima de 30 minutos en la
-franja en que realmente se publica algo.
+No es "tiempo real", y es deliberado: el portal publica en horario de oficina —el 86% de las
+entradas entre las 09:00 y las 15:00, con el máximo a las 13:00— así que ejecutar de noche o
+cada cinco minutos sería gasto sin retorno.
+
+**El reloj no es el cron de GitHub, es `pg_cron` en Supabase.** Medido sobre cuatro días,
+GitHub solo ejecutaba el 24% de los cron programados, y en la primera hora de la mañana
+ninguno. La base llama a la API de GitHub para lanzar el workflow por `workflow_dispatch`,
+que sí se ejecuta siempre. El detalle y la guía de diagnóstico están en
+[`docs/programacion-fiable.md`](docs/programacion-fiable.md).
 
 La carga histórica arranca en **mayo de 2023**, inicio de la XI legislatura y del propio
 observatorio.
@@ -84,8 +86,8 @@ src/transparencia_gobcan/
   cli.py                  Punto de entrada único
 migraciones/            SQL versionado del schema transp_gobcan
 tests/                  Pruebas, con fixtures capturados de las fuentes reales
-visualizacion/          Capa D3.js (pendiente)
-docs/                   Reconocimiento de fuentes y puntos de rotura
+visualizacion/          Interfaz de consulta en D3
+docs/                   Reconocimiento, puntos de rotura, vigilancia y programación
 ```
 
 La separación entre extracción, transformación, carga y visualización es explícita: cada
@@ -216,6 +218,10 @@ las pruebas cubran las rarezas que las fuentes tienen de verdad.
 
 El pipeline se rompe cuando la fuente cambia, y la fuente cambia. Lo previsible está
 documentado en [`docs/puntos-de-rotura.md`](docs/puntos-de-rotura.md).
+
+**Cómo se programa la ejecución y por qué no con el cron de GitHub**, en
+[`docs/programacion-fiable.md`](docs/programacion-fiable.md). Incluye la guía de
+diagnóstico del token, que ahorra horas.
 
 **Qué mirar cada semana, y qué ha fallado ya**, en
 [`docs/vigilancia.md`](docs/vigilancia.md). Los fallos que hemos tenido hasta ahora
