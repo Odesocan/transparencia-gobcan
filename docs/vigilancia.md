@@ -123,6 +123,39 @@ interruptor propio, desactivado por defecto.
 
 ---
 
+## Cuándo se ejecuta de verdad
+
+GitHub **no cumple los cron programados**. Medido sobre tres días con el cron
+anterior, que pedía una ejecución cada 30 minutos:
+
+| | |
+|---|---|
+| Pedidas | 25 al día laborable |
+| Ejecutadas | 7-8, un **24%** |
+| Separación real | mediana de 104 minutos, máxima de 197 |
+| Primera del día | 10:33 hora canaria, hora y media tarde |
+
+No es un fallo del proyecto: los trabajos programados tienen la prioridad más
+baja de la cola y se descartan cuando hay carga. Las 07:00-09:00 UTC son hora
+punta mundial, que es justo cuando peor se cumple.
+
+**No se pierde ningún dato**: la ventana incremental es de 24 horas y el UPSERT
+es idempotente, así que una sola ejecución al día dejaría la base completa. Lo
+que se pierde es latencia en el aviso.
+
+El cron actual pide 14 ejecuciones en vez de 26, en minutos no redondos —el
+`:00` y el `:30` son los más congestionados— y con dos intentos en la primera
+hora por si uno se descarta. Pedir menos y que se cumpla es mejor que pedir
+mucho y que se salte.
+
+> **Tarea con fecha: el último domingo de octubre.** El cron va siempre en UTC y
+> no se ajusta al horario de verano. Canarias pasa de UTC+1 a UTC+0, así que las
+> ejecuciones se adelantarán una hora —la primera pasaría de las 9:13 a las
+> 8:13— hasta que se sume una hora a cada expresión de `.github/workflows/`.
+> Y otra vez al revés a finales de marzo.
+
+---
+
 ## Lo que sabemos que habrá que hacer
 
 No son fallos, son deudas conocidas:

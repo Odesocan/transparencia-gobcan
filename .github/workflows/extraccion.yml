@@ -17,8 +17,29 @@ name: Extracción transparencia-gobcan
 
 on:
   schedule:
-    - cron: "*/30 7-19 * * 1-5"   # cada 30 min en franja laboral (hora canaria)
-    - cron: "0 21 * * *"          # cierre diario a las 22:00 hora canaria
+    # Medido sobre tres días: de las 25 ejecuciones diarias que pedía el cron
+    # anterior (*/30) solo corría el 24%, con una separación real de 104 minutos
+    # de mediana y la primera del día a las 10:33 hora canaria. GitHub da la
+    # prioridad más baja de la cola a los trabajos programados y los descarta
+    # cuando hay carga; las 07:00-09:00 UTC son hora punta mundial.
+    #
+    # Por eso se pide MENOS y en minutos no redondos: el :00 y el :30 son los
+    # más congestionados, porque es donde programa casi todo el mundo. Pedir
+    # cada hora con más probabilidad de cumplirse vale más que pedir cada media
+    # y que se salten tres de cada cuatro.
+    #
+    # Los dos intentos de la primera hora son deliberados: si el de las :13 se
+    # descarta, el de las :43 lo cubre. Es lo más cerca que se puede estar de
+    # garantizar una ejecución temprana sin salir de GitHub Actions.
+    #
+    # OJO CON EL CAMBIO DE HORA: el cron va siempre en UTC y no se ajusta solo.
+    # Canarias está en UTC+1 de finales de marzo a finales de octubre, y en
+    # UTC+0 el resto del año. Las horas de abajo están calculadas para el
+    # horario de VERANO; en octubre habrá que sumar una hora a cada expresión
+    # o las ejecuciones se adelantarán. Anotado en docs/vigilancia.md.
+    - cron: "13,43 8 * * 1-5"   # 9:13 y 9:43 hora canaria (verano)
+    - cron: "13 9-19 * * 1-5"   # cada hora, hasta las 20:13 canaria
+    - cron: "0 21 * * *"        # cierre diario a las 22:00 canaria
   workflow_dispatch:              # ejecución manual desde la interfaz de GitHub
     inputs:
       modo:
