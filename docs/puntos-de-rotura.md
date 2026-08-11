@@ -82,6 +82,33 @@ publicado y no son actividad ejecutiva. Si esos ids cambian, vuelven a entrar.
 
 **Síntoma:** salto del volumen diario de ~15 a ~17 y aparición de titulares de sucesos.
 
+### 1.6 Respuestas `200` que no traen JSON
+
+**Riesgo:** cierto, ya ha ocurrido. **Impacto:** alto si no se reintenta.
+
+El portal es Apache con PHP y responde `200` incluso cuando no tiene nada que decir. El
+11/08/2026 la primera petición de categorías devolvió `200` con **el cuerpo vacío**; la
+misma petición minutos después funcionaba. Ver el episodio completo en
+[`vigilancia.md`](vigilancia.md).
+
+Las variantes esperables de la misma familia:
+
+| Lo que llega | Qué suele ser |
+|---|---|
+| `200` con cuerpo vacío | Tropiezo pasajero de PHP. Se reintenta y se pasa |
+| `200` con HTML | Página de mantenimiento o de error del servidor delante |
+| `200` con `{"code": …, "message": …}` | Error de WordPress con código equivocado |
+| `200` con `[]` | **No es un fallo**: es el final normal de la paginación |
+
+**Qué hacer:** nada, ya está cubierto. `_pedir` interpreta el JSON dentro del alcance del
+reintento y lanza `RespuestaIlegible` —que sí se reintenta— con el código, el
+`Content-Type`, el tamaño y el principio del cuerpo. La distinción de la última fila es la
+que importa: confundir lista vacía con cuerpo vacío rompe por un lado o por el otro.
+
+**Si vuelve a aparecer y ya no es pasajero** —tres intentos fallidos seguidos— es que ha
+cambiado algo de verdad: mirar qué dice el cuerpo en el mensaje de error y, si es HTML de
+un portal de acceso, aplicar 1.1.
+
 ---
 
 ## 2. Parlamento de Canarias
