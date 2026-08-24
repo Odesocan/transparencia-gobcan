@@ -14,7 +14,6 @@ dependencies = [
     "httpx>=0.27",
     "tenacity>=8.2",            # reintentos con espera progresiva
     # Transformación
-    "pandas>=2.2",
     "pydantic>=2.7",            # validación del modelo de datos
     "beautifulsoup4>=4.12",     # extracción de la entradilla y respaldo HTML
     "lxml>=5.2",
