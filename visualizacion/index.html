@@ -4,7 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Transparencia Gobcan · ODESOCAN</title>
+<meta name="description" content="Buscador de la actividad ejecutiva y parlamentaria de Canarias desde mayo de 2023. Observatorio de Derechos Sociales de Canarias.">
+<meta name="color-scheme" content="light dark">
 <link rel="stylesheet" href="fuentes.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230D1B2A'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%2300C8B4' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.6' fill='%2300C8B4'/%3E%3C/svg%3E">
 <script>
 /* Se ejecuta antes de pintar nada: si el atributo se pusiera más tarde, la
    página aparecería un instante en claro y saltaría a oscuro. */
@@ -24,19 +27,35 @@
   --teal:#00C8B4; --teal-dark:#009E8E;
   --violeta:#7C5CE6; --red:#FF4757;
   /* superficies y texto */
-  --fondo:#F5F8FA; --superficie:#FFFFFF; --campo:#F5F8FA;
+  --fondo:#F5F8FA; --superficie:#FFFFFF; --campo:#F5F8FA; --elevado:#FFFFFF;
   --text-main:#1A2F45; --text-muted:#6B8CA5;
   --border-soft:#E4EDF5; --grid:#EEF3F8;
   /* piezas */
-  --pill-bg:#E0FAF7; --pill-fg:#009E8E;
-  --pill-tipo-bg:#F0EBFD; --pill-tipo-fg:#7C5CE6;
-  --pill-alerta-bg:rgba(255,71,87,.12); --pill-alerta-fg:#E0394A;
+  --pill-bg:#E0FAF7; --pill-fg:#007A6E;
+  --pill-tipo-bg:#F0EBFD; --pill-tipo-fg:#6A3AD0;
+  --pill-alerta-bg:rgba(255,71,87,.12); --pill-alerta-fg:#D02131;
   --hero-1:#0D1B2A; --hero-2:#1A2F45; --hero-3:#0F3460;
   --pie:#0D1B2A;
   --activo-bg:#0D1B2A; --activo-fg:#FFFFFF;
   --marca:rgba(0,200,180,.26);
+  --sombra:0 2px 16px rgba(13,27,42,.08);
+  --sombra-alta:0 8px 28px rgba(13,27,42,.12);
   /* series del gráfico */
   --serie-gob:#00C8B4; --serie-par:#7C5CE6;
+  --seleccion:rgba(0,200,180,.14);
+
+  /* Familias cromáticas de las etiquetas temáticas, de la guía de estilo.
+     Cada par texto/fondo está verificado a 4,5:1, el mínimo de WCAG AA para
+     texto pequeño. El teal corporativo no llegaba (3,0:1 sobre su propio
+     fondo), así que el distintivo usa #007A6E solo para el texto. */
+  --f-teal-bg:#DEF8F5;    --f-teal-fg:#007A6E;    --f-teal-base:#00C8B4;
+  --f-verde-bg:#E0F6EF;   --f-verde-fg:#067A55;   --f-verde-base:#10B981;
+  --f-ambar-bg:#F9F1DF;   --f-ambar-fg:#8A6100;   --f-ambar-base:#D4940A;
+  --f-rojo-bg:#FFE7E9;    --f-rojo-fg:#D02131;    --f-rojo-base:#FF4757;
+  --f-azul-bg:#EAF3FE;    --f-azul-fg:#1F5FBF;    --f-azul-base:#60A5FA;
+  --f-violeta-bg:#F3ECFD; --f-violeta-fg:#6A3AD0; --f-violeta-base:#9F6EF0;
+  --f-naranja-bg:#FEEDE1; --f-naranja-fg:#B14B05; --f-naranja-base:#F97316;
+  --f-navy-bg:#E8EDF2;    --f-navy-fg:#33506B;    --f-navy-base:#33506B;
 }
 
 /* Pasos propios para el fondo oscuro, no una inversión: sobre superficie
@@ -45,7 +64,7 @@
    comprobaciones del validador de paleta. */
 :root[data-tema="oscuro"]{
   --teal:#00A896; --teal-dark:#3FD5C3;
-  --fondo:#0D1B2A; --superficie:#152233; --campo:#0D1B2A;
+  --fondo:#0D1B2A; --superficie:#152233; --campo:#0D1B2A; --elevado:#1B2C41;
   --text-main:#DCE6EF; --text-muted:#8FA9BF;
   --border-soft:#22354C; --grid:#1E3047;
   --pill-bg:rgba(0,168,150,.18); --pill-fg:#3FD5C3;
@@ -55,19 +74,39 @@
   --pie:#06131F;
   --activo-bg:#00A896; --activo-fg:#06131F;
   --marca:rgba(0,168,150,.35);
+  --sombra:0 2px 16px rgba(0,0,0,.28);
+  --sombra-alta:0 8px 28px rgba(0,0,0,.4);
   --serie-gob:#00A896; --serie-par:#7C5CE6;
+  --seleccion:rgba(0,168,150,.2);
+
+  --f-teal-bg:#11434D;    --f-teal-fg:#3FD5C3;
+  --f-verde-bg:#144043;   --f-verde-fg:#34D399;
+  --f-ambar-bg:#3B392B;   --f-ambar-fg:#E5B54D;
+  --f-rojo-bg:#44293A;    --f-rojo-fg:#FF8A94;
+  --f-azul-bg:#243C5B;    --f-azul-fg:#8CC2FF;
+  --f-violeta-bg:#313159; --f-violeta-fg:#C0A3FF;
+  --f-naranja-bg:#43322D; --f-naranja-fg:#FDA36A;
+  --f-navy-bg:#132131;    --f-navy-fg:#9FB6CC;   --f-navy-base:#9FB6CC;
 }
 
 *{box-sizing:border-box}
+/* Los componentes de esta página declaran display:inline-flex, y las reglas de
+   autor ganan siempre a la hoja del navegador: sin este !important el atributo
+   `hidden` no ocultaba nada y el bloque plegado salía desplegado. */
+[hidden]{display:none!important}
 html,body{margin:0;padding:0}
 body{background:var(--fondo);color:var(--text-main);
      font-family:'Inter',system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1180px;margin:0 auto;padding:0 18px}
 @media(min-width:640px){.wrap{padding:0 32px}}
+@media(min-width:1024px){.wrap{padding:0 40px}}
 h1,h2,h3{font-family:'Space Grotesk',sans-serif;margin:0}
 a{color:var(--teal-dark)}
 .label{font-family:'Space Grotesk';font-size:10px;font-weight:700;
        text-transform:uppercase;letter-spacing:.12em;color:var(--text-muted)}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.oculto-visualmente{position:absolute;width:1px;height:1px;margin:-1px;padding:0;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
 /* ---------- cabecera ---------- */
 .hero{background:linear-gradient(145deg,var(--hero-1) 0%,var(--hero-2) 60%,var(--hero-3) 100%);
@@ -78,61 +117,173 @@ a{color:var(--teal-dark)}
 .hero .label{color:rgba(255,255,255,.5)}
 .hero h1{color:#fff;font-size:clamp(1.35rem,2.8vw,1.85rem);font-weight:700;margin:8px 0 4px}
 .hero h1 em{font-style:normal;color:var(--teal)}
-.hero p{color:rgba(255,255,255,.6);font-size:.86rem;margin:0}
+.hero p{color:rgba(255,255,255,.62);font-size:.86rem;margin:0}
 
 /* ---------- barra de filtros ---------- */
 .filtros{background:var(--superficie);border-bottom:1px solid var(--border-soft);
-         position:sticky;top:0;z-index:20;box-shadow:0 1px 12px rgba(13,27,42,.05)}
+         position:sticky;top:0;z-index:30;box-shadow:0 1px 12px rgba(13,27,42,.05)}
 .filtros .wrap{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding-top:12px;padding-bottom:12px}
 .conmutador{display:inline-flex;background:var(--campo);border-radius:99px;padding:3px;gap:2px}
 .conmutador button{font-family:'Space Grotesk';font-weight:700;font-size:12px;border:0;
   background:transparent;color:var(--text-muted);padding:7px 15px;border-radius:99px;cursor:pointer;
   transition:background .15s,color .15s}
 .conmutador button[aria-pressed="true"]{background:var(--activo-bg);color:var(--activo-fg)}
-.conmutador button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
 
-.campo{position:relative;display:flex;align-items:center}
+.campo{position:relative;display:flex;align-items:center;flex:1 1 220px;min-width:0}
 input[type=search],input[type=date],select{
   font-family:'Inter';font-size:13px;color:var(--text-main);background:var(--campo);
-  border:1px solid var(--border-soft);border-radius:10px;padding:9px 12px;min-height:38px}
-input[type=search]{min-width:230px}
+  border:1px solid var(--border-soft);border-radius:12px;padding:9px 12px;min-height:38px}
+input[type=search]{width:100%}
 input[type=search]:focus,input[type=date]:focus,select:focus{
   outline:none;border-color:var(--teal);background:var(--superficie);box-shadow:0 0 0 3px rgba(0,200,180,.18)}
-select{cursor:pointer;max-width:230px}
+select{cursor:pointer}
 .solo-alertas{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;
   font-family:'Space Grotesk';font-weight:600;color:var(--text-muted);cursor:pointer;
-  padding:8px 13px;border:1px solid var(--border-soft);border-radius:10px;background:var(--campo)}
+  padding:8px 13px;border:1px solid var(--border-soft);border-radius:12px;background:var(--campo);
+  white-space:nowrap;min-height:38px}
 .solo-alertas input{accent-color:var(--teal-dark);width:15px;height:15px;cursor:pointer}
 .solo-alertas.activo{background:var(--pill-bg);border-color:var(--teal);color:var(--pill-fg)}
-.btn-limpiar{font-family:'Space Grotesk';font-weight:700;font-size:12px;border:0;background:transparent;
-  color:var(--text-muted);cursor:pointer;padding:8px 6px;text-decoration:underline}
+
+/* ---------- desplegables (periodo y ente) ---------- */
+.desplegable{position:relative}
+.disparador{display:inline-flex;align-items:center;gap:7px;font-family:'Space Grotesk';
+  font-weight:700;font-size:12.5px;color:var(--text-main);background:var(--campo);
+  border:1px solid var(--border-soft);border-radius:12px;padding:8px 13px;min-height:38px;
+  cursor:pointer;white-space:nowrap}
+.disparador:hover{border-color:var(--teal)}
+.disparador[aria-expanded="true"]{border-color:var(--teal);background:var(--superficie)}
+.disparador.con-valor{background:var(--pill-bg);border-color:var(--teal);color:var(--pill-fg)}
+.disparador .flecha{width:9px;height:9px;border-right:2px solid currentColor;
+  border-bottom:2px solid currentColor;transform:rotate(45deg) translate(-2px,-2px);opacity:.6}
+.disparador .n{background:var(--activo-bg);color:var(--activo-fg);border-radius:99px;
+  min-width:17px;height:17px;font-size:10px;display:inline-flex;align-items:center;
+  justify-content:center;padding:0 5px}
+
+.panel{position:absolute;top:calc(100% + 7px);left:0;z-index:50;min-width:290px;
+  background:var(--elevado);border:1px solid var(--border-soft);border-radius:16px;
+  box-shadow:var(--sombra-alta);padding:13px}
+@media(max-width:520px){.panel{left:auto;right:0;min-width:min(290px,88vw)}}
+.panel h4{font-size:10px;font-family:'Space Grotesk';font-weight:700;text-transform:uppercase;
+  letter-spacing:.12em;color:var(--text-muted);margin:0 0 8px}
+.atajos{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:13px}
+.atajos button{font-family:'Space Grotesk';font-weight:600;font-size:11.5px;
+  background:var(--campo);border:1px solid var(--border-soft);color:var(--text-main);
+  border-radius:99px;padding:5px 12px;cursor:pointer}
+.atajos button:hover{border-color:var(--teal);color:var(--teal-dark)}
+.atajos button[aria-pressed="true"]{background:var(--activo-bg);color:var(--activo-fg);
+  border-color:var(--activo-bg)}
+.rango{display:flex;gap:8px;align-items:center}
+.rango label{font-size:11px;color:var(--text-muted);font-family:'Space Grotesk';font-weight:600}
+.rango input{width:100%;min-width:0}
+.rango>div{flex:1;min-width:0}
+
+.opciones{max-height:270px;overflow-y:auto;margin:0 -4px;padding:0 4px}
+.opcion{display:flex;align-items:center;gap:9px;padding:6px 7px;border-radius:9px;
+  cursor:pointer;font-size:12.5px;line-height:1.35}
+.opcion:hover{background:var(--campo)}
+.opcion input{accent-color:var(--teal-dark);width:15px;height:15px;cursor:pointer;flex:none}
+.opcion .txt{flex:1;min-width:0}
+.opcion .c{font-family:'Space Grotesk';font-weight:700;font-size:11px;color:var(--text-muted);
+  font-variant-numeric:tabular-nums}
+.opcion.vacia{opacity:.42}
+.panel-pie{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  margin-top:10px;padding-top:10px;border-top:1px solid var(--border-soft)}
+.enlace-btn{font-family:'Space Grotesk';font-weight:700;font-size:11.5px;border:0;
+  background:transparent;color:var(--text-muted);cursor:pointer;padding:4px 2px;text-decoration:underline}
+.enlace-btn:hover{color:var(--red)}
+
+.btn-tema{margin-left:auto;display:inline-flex;align-items:center;gap:7px;
+  font-family:'Space Grotesk';font-weight:700;font-size:12px;color:var(--text-muted);
+  background:var(--campo);border:1px solid var(--border-soft);border-radius:12px;
+  padding:8px 13px;min-height:38px;cursor:pointer}
+.btn-tema:hover{border-color:var(--teal);color:var(--teal-dark)}
+.btn-tema svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+:root[data-tema="oscuro"] .btn-tema .luna{display:none}
+:root:not([data-tema="oscuro"]) .btn-tema .sol{display:none}
+
+/* ---------- nube de etiquetas temáticas ---------- */
+.areas{background:var(--superficie);border-bottom:1px solid var(--border-soft)}
+.areas .wrap{padding-top:14px;padding-bottom:14px}
+.areas-cab{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:9px}
+.areas-cab .label{margin:0}
+.modo{display:inline-flex;background:var(--campo);border-radius:99px;padding:2px;gap:2px}
+.modo button{font-family:'Space Grotesk';font-weight:700;font-size:10.5px;border:0;
+  background:transparent;color:var(--text-muted);padding:4px 11px;border-radius:99px;cursor:pointer}
+.modo button[aria-pressed="true"]{background:var(--activo-bg);color:var(--activo-fg)}
+.modo-ayuda{font-size:11.5px;color:var(--text-muted)}
+
+.nube{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.nube + .nube{margin-top:9px}
+.grupo-tit{font-family:'Space Grotesk';font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--text-muted);width:100%;margin:5px 0 1px}
+.eti{font-family:'Space Grotesk';font-size:11.5px;font-weight:700;letter-spacing:.01em;
+  border:1px solid transparent;border-radius:99px;padding:5px 12px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;line-height:1.25;
+  background:var(--eti-bg,var(--f-navy-bg));color:var(--eti-fg,var(--f-navy-fg));
+  transition:box-shadow .14s,transform .14s}
+.eti:hover{transform:translateY(-1px);box-shadow:var(--sombra)}
+.eti .c{font-weight:600;font-size:10px;opacity:.72;font-variant-numeric:tabular-nums}
+.eti[aria-pressed="true"]{box-shadow:0 0 0 2px var(--eti-base) inset}
+.eti[data-vacia="1"]{opacity:.38}
+/* Las familias solo declaran variables. Así el mismo color vale para el
+   marcador de la nube y para el de la tarjeta, que compite con la regla
+   genérica de .pill y perdía por orden de aparición: todos salían en teal. */
+[data-color="teal"]   {--eti-base:var(--f-teal-base);   --eti-bg:var(--f-teal-bg);   --eti-fg:var(--f-teal-fg)}
+[data-color="verde"]  {--eti-base:var(--f-verde-base);  --eti-bg:var(--f-verde-bg);  --eti-fg:var(--f-verde-fg)}
+[data-color="ambar"]  {--eti-base:var(--f-ambar-base);  --eti-bg:var(--f-ambar-bg);  --eti-fg:var(--f-ambar-fg)}
+[data-color="rojo"]   {--eti-base:var(--f-rojo-base);   --eti-bg:var(--f-rojo-bg);   --eti-fg:var(--f-rojo-fg)}
+[data-color="azul"]   {--eti-base:var(--f-azul-base);   --eti-bg:var(--f-azul-bg);   --eti-fg:var(--f-azul-fg)}
+[data-color="violeta"]{--eti-base:var(--f-violeta-base);--eti-bg:var(--f-violeta-bg);--eti-fg:var(--f-violeta-fg)}
+[data-color="naranja"]{--eti-base:var(--f-naranja-base);--eti-bg:var(--f-naranja-bg);--eti-fg:var(--f-naranja-fg)}
+[data-color="navy"]   {--eti-base:var(--f-navy-base);   --eti-bg:var(--f-navy-bg);   --eti-fg:var(--f-navy-fg)}
+.mas-areas{font-family:'Space Grotesk';font-weight:700;font-size:11.5px;border:1px dashed var(--border-soft);
+  background:transparent;color:var(--text-muted);border-radius:99px;padding:5px 12px;cursor:pointer}
+.mas-areas:hover{border-color:var(--teal);color:var(--teal-dark)}
+
+/* ---------- filtros activos ---------- */
+.activos{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:11px 0 0;
+  border-top:1px dashed var(--border-soft);margin-top:12px}
+.activos[hidden]{display:none}
+.activos .label{margin-right:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:'Space Grotesk';
+  font-weight:600;font-size:11.5px;background:var(--campo);border:1px solid var(--border-soft);
+  color:var(--text-main);border-radius:99px;padding:4px 6px 4px 11px;cursor:pointer}
+.chip:hover{border-color:var(--red);color:var(--red)}
+.chip .x{font-size:13px;line-height:1;opacity:.6;padding:0 3px}
+.btn-limpiar{font-family:'Space Grotesk';font-weight:700;font-size:11.5px;border:0;
+  background:transparent;color:var(--text-muted);cursor:pointer;padding:4px 6px;text-decoration:underline}
 .btn-limpiar:hover{color:var(--red)}
 
 /* ---------- gráfico ---------- */
-.chart-container{background:var(--superficie);border-radius:16px;border:1px solid var(--border-soft);
-  padding:18px 20px 10px;margin:20px 0 16px}
+.chart-container{background:var(--superficie);border-radius:24px;border:1px solid var(--border-soft);
+  padding:18px 20px 10px;margin:20px 0 16px;box-shadow:var(--sombra)}
 .chart-cab{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
 .chart-tit{font-family:'Space Grotesk';font-weight:700;color:var(--text-main);font-size:.98rem}
 .chart-sub{font-size:.8rem;color:var(--text-muted);margin-top:2px}
-.leyenda{display:flex;gap:14px;flex-wrap:wrap}
-.leyenda span{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-main);
-  font-family:'Space Grotesk';font-weight:600}
-.leyenda i{width:11px;height:11px;border-radius:3px;display:inline-block}
 .eje text{fill:var(--text-muted);font-size:10px;font-family:'Inter'}
 .eje .domain{display:none}
 .eje line{stroke:var(--grid)}
-.barra{cursor:pointer}
-.barra:hover{opacity:.78}
+.barra{pointer-events:none}
+.pincel .selection{fill:var(--seleccion);stroke:var(--teal);stroke-width:1;stroke-dasharray:3 2}
+.pincel .overlay{cursor:crosshair}
+.pincel .handle{fill:var(--teal);opacity:.55}
+figcaption{font-family:'Inter';font-size:.78rem;color:var(--text-muted);
+  padding:4px 0 8px;margin:0}
 
 /* ---------- resultados ---------- */
-.resumen{display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+.resumen{display:flex;justify-content:space-between;align-items:center;gap:14px;
   flex-wrap:wrap;margin:22px 0 12px}
 .resumen .n{font-family:'Space Grotesk';font-weight:700;font-size:1.05rem;color:var(--text-main)}
 .resumen .n b{color:var(--teal-dark)}
+.controles-lista{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.controles-lista label{font-family:'Space Grotesk';font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted)}
+.controles-lista select{padding:6px 9px;min-height:32px;font-size:12px;border-radius:9px}
 
-.tarjeta{background:var(--superficie);border:1px solid var(--border-soft);border-radius:14px;
+.tarjeta{background:var(--superficie);border:1px solid var(--border-soft);border-radius:16px;
   padding:17px 19px;margin-bottom:11px;transition:box-shadow .16s,transform .16s}
-.tarjeta:hover{box-shadow:0 6px 22px rgba(13,27,42,.09);transform:translateY(-1px)}
+.tarjeta:hover{box-shadow:var(--sombra-alta);transform:translateY(-1px)}
 .tarjeta .origen{font-family:'Space Grotesk';font-size:10px;font-weight:700;
   letter-spacing:.1em;text-transform:uppercase}
 .origen.gob{color:var(--pill-fg)}
@@ -146,12 +297,15 @@ select{cursor:pointer;max-width:230px}
 .pills{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .pill{font-family:'Space Grotesk';font-size:10px;font-weight:700;letter-spacing:.05em;
   text-transform:uppercase;padding:3.5px 10px;border-radius:99px;
-  background:var(--pill-bg);color:var(--pill-fg)}
+  background:var(--pill-bg);color:var(--pill-fg);border:0}
 .pill.alerta{background:var(--pill-alerta-bg);color:var(--pill-alerta-fg)}
 .pill.tipo{background:var(--pill-tipo-bg);color:var(--pill-tipo-fg)}
-.pill.inferido{background:#fff;border:1px dashed var(--border-soft);color:var(--text-muted)}
+.pill.eti-card{cursor:pointer;text-transform:none;letter-spacing:.01em;font-size:10.5px;
+  background:var(--eti-bg,var(--pill-bg));color:var(--eti-fg,var(--pill-fg))}
+.pill.eti-card:hover{box-shadow:0 0 0 2px var(--eti-base) inset}
+.pill.eti-card[aria-pressed="true"]{box-shadow:0 0 0 2px var(--eti-base) inset}
 .enlace{font-family:'Space Grotesk';font-weight:700;font-size:12.5px;color:var(--pill-fg);
-  text-decoration:none;white-space:nowrap}
+  text-decoration:none;white-space:nowrap;margin-left:auto}
 
 mark{background:var(--marca);color:inherit;padding:0 1px;border-radius:2px}
 
@@ -160,46 +314,44 @@ mark{background:var(--marca);color:inherit;padding:0 1px;border-radius:2px}
   flex-wrap:wrap;margin:22px 0 40px}
 .paginacion button{font-family:'Space Grotesk';font-weight:700;font-size:12.5px;
   min-width:38px;height:38px;border:1px solid var(--border-soft);background:var(--superficie);
-  color:var(--text-main);border-radius:10px;cursor:pointer;padding:0 11px}
+  color:var(--text-main);border-radius:12px;cursor:pointer;padding:0 11px}
 .paginacion button:hover:not(:disabled){border-color:var(--teal);color:var(--teal-dark)}
 .paginacion button[aria-current="page"]{background:var(--activo-bg);color:var(--activo-fg);border-color:var(--activo-bg)}
 .paginacion button:disabled{opacity:.35;cursor:default}
 .paginacion .puntos{color:var(--text-muted);padding:0 3px}
 
-.vacio{background:var(--superficie);border:1px dashed var(--border-soft);border-radius:14px;
+.vacio{background:var(--superficie);border:1px dashed var(--border-soft);border-radius:16px;
   padding:44px 20px;text-align:center;color:var(--text-muted)}
 .vacio strong{display:block;font-family:'Space Grotesk';color:var(--text-main);
   font-size:1.02rem;margin-bottom:5px}
+.vacio button{margin-top:12px}
 
 #tooltip{position:fixed;pointer-events:none;opacity:0;transition:opacity .12s;
   background:var(--hero-1);color:#fff;border:1px solid rgba(0,200,180,.2);
   border-radius:9px;padding:9px 12px;font-size:12px;z-index:60;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 #tooltip .t{font-family:'Space Grotesk';font-weight:700;color:var(--teal);
   font-size:11px;margin-bottom:4px}
-#tooltip div{display:flex;justify-content:space-between;gap:14px}
+#tooltip .fila{display:flex;justify-content:space-between;gap:14px}
+#tooltip .pista{color:rgba(255,255,255,.5);font-size:10.5px;margin-top:5px}
 
 .cargando{text-align:center;padding:60px 20px;color:var(--text-muted)}
-
-/* ---------- conmutador de tema ---------- */
-.btn-tema{margin-left:auto;display:inline-flex;align-items:center;gap:7px;
-  font-family:'Space Grotesk';font-weight:700;font-size:12px;color:var(--text-muted);
-  background:var(--campo);border:1px solid var(--border-soft);border-radius:10px;
-  padding:8px 13px;min-height:38px;cursor:pointer}
-.btn-tema:hover{border-color:var(--teal);color:var(--teal-dark)}
-.btn-tema:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
-.btn-tema svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;
-  stroke-linecap:round;stroke-linejoin:round}
-:root[data-tema="oscuro"] .btn-tema .luna{display:none}
-:root:not([data-tema="oscuro"]) .btn-tema .sol{display:none}
 
 footer{background:var(--pie);color:var(--text-muted);padding:22px 0;font-size:.78rem}
 footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 footer b{color:#fff;font-family:'Space Grotesk'}
+footer a{color:var(--teal)}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-thumb{background:var(--teal);border-radius:99px}
+
 @media(max-width:640px){
   .filtros .wrap{gap:8px}
-  input[type=search]{min-width:100%;flex:1 1 100%}
+  .campo{flex:1 1 100%}
+  .btn-tema{margin-left:0}
+  .enlace{margin-left:0}
+}
+@media(prefers-reduced-motion:reduce){
+  *{transition:none!important;scroll-behavior:auto!important}
+  .tarjeta:hover,.eti:hover{transform:none}
 }
 </style>
 </head>
@@ -222,19 +374,48 @@ footer b{color:#fff;font-family:'Space Grotesk'}
 
     <div class="campo">
       <input type="search" id="buscar" placeholder="Buscar por palabra clave…"
-             aria-label="Buscar por palabra clave">
+             aria-label="Buscar por palabra clave" autocomplete="off">
     </div>
 
-    <input type="date" id="desde" aria-label="Desde">
-    <input type="date" id="hasta" aria-label="Hasta">
+    <!-- Periodo -->
+    <div class="desplegable" id="dd-periodo">
+      <button class="disparador" id="btn-periodo" aria-expanded="false" aria-controls="panel-periodo">
+        <span id="etq-periodo">Periodo</span><span class="flecha" aria-hidden="true"></span>
+      </button>
+      <div class="panel" id="panel-periodo" hidden>
+        <h4>Atajos</h4>
+        <div class="atajos" id="atajos-periodo"></div>
+        <h4>Fechas exactas</h4>
+        <div class="rango">
+          <div><label for="desde">Desde</label><input type="date" id="desde"></div>
+          <div><label for="hasta">Hasta</label><input type="date" id="hasta"></div>
+        </div>
+        <div class="panel-pie">
+          <span class="modo-ayuda">También puedes arrastrar sobre el gráfico.</span>
+          <button class="enlace-btn" data-limpia="periodo">Quitar</button>
+        </div>
+      </div>
+    </div>
 
-    <select id="dimension" aria-label="Área o grupo parlamentario"></select>
+    <!-- Ente -->
+    <div class="desplegable" id="dd-ente">
+      <button class="disparador" id="btn-ente" aria-expanded="false" aria-controls="panel-ente">
+        <span id="etq-ente">Ente</span><span class="n" id="n-ente" hidden>0</span>
+        <span class="flecha" aria-hidden="true"></span>
+      </button>
+      <div class="panel" id="panel-ente" hidden>
+        <h4 id="tit-ente">Consejería u órgano</h4>
+        <div class="opciones" id="opciones-ente" role="group" aria-labelledby="tit-ente"></div>
+        <div class="panel-pie">
+          <span class="modo-ayuda" id="ayuda-ente"></span>
+          <button class="enlace-btn" data-limpia="ente">Quitar</button>
+        </div>
+      </div>
+    </div>
 
     <label class="solo-alertas" id="lab-alertas">
       <input type="checkbox" id="solo-alertas"> Solo decisiones
     </label>
-
-    <button class="btn-limpiar" id="limpiar">Limpiar</button>
 
     <button class="btn-tema" id="tema" aria-label="Cambiar entre tema claro y oscuro">
       <svg class="luna" viewBox="0 0 24 24" aria-hidden="true">
@@ -249,6 +430,28 @@ footer b{color:#fff;font-family:'Space Grotesk'}
   </div>
 </div>
 
+<!-- Las etiquetas temáticas se solapan: una entrada puede llevar varias y sale
+     en todos sus filtros. Por eso van como nube de marcadores y no como lista
+     desplegable, que sugeriría que hay que elegir uno. -->
+<section class="areas" aria-labelledby="tit-areas">
+  <div class="wrap">
+    <div class="areas-cab">
+      <span class="label" id="tit-areas">Área temática</span>
+      <div class="modo" role="group" aria-label="Cómo se combinan las áreas marcadas">
+        <button data-modo="cualquiera" aria-pressed="true">Cualquiera</button>
+        <button data-modo="todas" aria-pressed="false">Todas</button>
+      </div>
+      <span class="modo-ayuda" id="ayuda-modo">Marca varias: salen las entradas que tratan de alguna de ellas.</span>
+    </div>
+    <div id="nubes"></div>
+    <div class="activos" id="activos" hidden>
+      <span class="label">Filtros activos</span>
+      <span id="chips-activos"></span>
+      <button class="btn-limpiar" id="limpiar">Limpiar todo</button>
+    </div>
+  </div>
+</section>
+
 <main class="wrap">
   <figure class="chart-container" style="margin-left:0;margin-right:0">
     <div class="chart-cab">
@@ -256,14 +459,28 @@ footer b{color:#fff;font-family:'Space Grotesk'}
         <div class="chart-tit" id="chart-tit">Publicaciones por mes</div>
         <div class="chart-sub" id="chart-sub">Sobre el resultado filtrado</div>
       </div>
-      <div class="leyenda" id="leyenda"></div>
     </div>
     <div id="grafico"></div>
+    <figcaption>Fuente: portal de noticias del Gobierno de Canarias y buscador de
+      iniciativas del Parlamento de Canarias. Pulsa un mes para acotarlo o arrastra
+      para seleccionar un tramo.</figcaption>
   </figure>
 
   <div class="resumen">
-    <div class="n" id="contador">—</div>
-    <div class="label" id="orden">Más recientes primero</div>
+    <div class="n" id="contador" role="status" aria-live="polite">—</div>
+    <div class="controles-lista">
+      <label for="orden">Orden</label>
+      <select id="orden">
+        <option value="desc">Más recientes primero</option>
+        <option value="asc">Más antiguas primero</option>
+      </select>
+      <label for="por-pagina">Por página</label>
+      <select id="por-pagina">
+        <option value="10">10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+      </select>
+    </div>
   </div>
 
   <div id="listado"><div class="cargando">Cargando…</div></div>
@@ -277,7 +494,7 @@ footer b{color:#fff;font-family:'Space Grotesk'}
   </div>
 </footer>
 
-<div id="tooltip" role="status" aria-live="polite"></div>
+<div id="tooltip" role="status" aria-live="off"></div>
 
 <!-- Los datos entran como script y no por fetch: Chrome bloquea las peticiones
      desde file://, que es como se abre esta página al hacer doble clic. -->
@@ -286,55 +503,47 @@ footer b{color:#fff;font-family:'Space Grotesk'}
 <script>
 "use strict";
 
+/* ==================================================================
+   Estado, datos y utilidades
+   ================================================================== */
+
 // Los pasos del gráfico se leen del CSS, así que el tema y el gráfico no pueden
 // desincronizarse: hay una única definición de cada color.
-function serie(nombre){
-  return getComputedStyle(document.documentElement)
-    .getPropertyValue(nombre === "gobierno" ? "--serie-gob" : "--serie-par").trim();
+function css(nombre){
+  return getComputedStyle(document.documentElement).getPropertyValue(nombre).trim();
 }
 
-const POR_PAGINA = 10;
 const MESES = ["enero","febrero","marzo","abril","mayo","junio",
                "julio","agosto","septiembre","octubre","noviembre","diciembre"];
 
-let DATOS = null, C = {}, FILAS = [], filtradas = [], pagina = 1;
+let DATOS = null, C = {}, FILAS = [], IDX = {};
+let ETIQUETAS = [], GRUPOS_ETI = [], ORDEN_ETI = new Map();
 // Texto de búsqueda ya normalizado, calculado una vez al cargar. Hacerlo en
 // cada pulsación obligaba a recorrer 16.000 títulos y entradillas aplicando
 // NFD y quitando diacríticos: 27 ms por tecla frente a 9 con esto hecho.
 let BUSCABLE = [];
-const estado = {fuente: "0", texto: "", desde: "", hasta: "", dimension: "", soloAlertas: false};
+// Los grupos parlamentarios llegan de la fuente como una cadena con todos los
+// proponentes de la iniciativa: "GP Socialista Canario, GP Popular, …". Como
+// catálogo eran 12 combinaciones y no 7 grupos, así que filtrar por "GP Popular"
+// dejaba fuera todo lo que el PP firma con otro. Se parten una vez al cargar.
+let PARTES_GRUPO = [];
+let ENTES = [];               // opciones del desplegable, según la fuente activa
+let filtradas = [];
 
-// El índice de cada campo se lee de la cabecera del fichero, así que añadir
-// columnas nuevas al final del volcado no rompe la interfaz.
-let IDX = {};
+const estado = {
+  fuente: "0", texto: "", desde: "", hasta: "",
+  entes: new Set(), etiquetas: new Set(), modo: "cualquiera",
+  soloAlertas: false, orden: "desc", porPagina: 10, pagina: 1,
+};
 
-function arrancar(d){
-  DATOS = d;
-  C = d.catalogos;
-  d.campos.forEach((nombre, i) => IDX[nombre] = i);
-  FILAS = d.filas;
-  BUSCABLE = FILAS.map(f => normalizar(f[IDX.titulo] + " " + f[IDX.entrada]));
+const $ = id => document.getElementById(id);
 
-  document.getElementById("cobertura").textContent =
-    `${FILAS.length.toLocaleString("es-ES")} publicaciones · de ${fechaLarga(FILAS[FILAS.length-1][IDX.fecha])} a ${fechaLarga(FILAS[0][IDX.fecha])}`;
-  document.getElementById("pie-version").textContent = `v${d.version}`;
-
-  poblarDimension();
-  aplicar();
+function normalizar(s){
+  return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
 }
-
-// El atributo ya lo fijó el script del <head>; aquí solo se sincroniza el botón
-aplicarTema(document.documentElement.getAttribute("data-tema") || "claro");
-
-if (window.DATOS_TRANSPARENCIA){
-  arrancar(window.DATOS_TRANSPARENCIA);
-} else {
-  document.getElementById("listado").innerHTML =
-    `<div class="vacio"><strong>No se han podido cargar los datos</strong>
-     Falta <code>datos.js</code> junto a este fichero.
-     Se regenera con <code>transparencia exportar</code>.</div>`;
+function escapar(s){
+  return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
-
 function fechaLarga(iso){
   const [a,m,d] = iso.split("-").map(Number);
   return `${d} de ${MESES[m-1]} de ${a}`;
@@ -347,88 +556,407 @@ function mesLargo(clave){
   const [a,m] = clave.split("-").map(Number);
   return `${MESES[m-1]} de ${a}`;
 }
-function normalizar(s){
-  return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+function finDeMes(clave){
+  const [a,m] = clave.split("-").map(Number);
+  return `${clave}-${String(new Date(a, m, 0).getDate()).padStart(2,"0")}`;
+}
+const miles = n => n.toLocaleString("es-ES");
+
+/* ==================================================================
+   Arranque
+   ================================================================== */
+
+function arrancar(d){
+  DATOS = d;
+  C = d.catalogos;
+  d.campos.forEach((nombre, i) => IDX[nombre] = i);
+  FILAS = d.filas;
+  BUSCABLE = FILAS.map(f => normalizar(f[IDX.titulo] + " " + f[IDX.entrada]));
+  PARTES_GRUPO = (C.grupo || []).map(g => g.split(", "));
+
+  // El volcado trae el catálogo de etiquetas con su nombre, su grupo y su
+  // familia de color, así que ampliar el vocabulario en config/ no obliga a
+  // tocar esta página: basta reexportar.
+  ETIQUETAS = d.etiquetas || [];
+  GRUPOS_ETI = d.grupos_etiquetas || [];
+  ETIQUETAS.forEach(e => ORDEN_ETI.set(e.clave, ORDEN_ETI.size));
+
+  $("cobertura").textContent =
+    `${miles(FILAS.length)} publicaciones · de ${fechaLarga(FILAS[FILAS.length-1][IDX.fecha])} a ${fechaLarga(FILAS[0][IDX.fecha])}`;
+  $("pie-version").textContent = `v${d.version}`;
+
+  construirAtajosPeriodo();
+  construirNube();
+  leerEnlace();
+  poblarEntes();
+  sincronizarControles();
+  aplicar();
 }
 
-/* ------------------------------------------------------------------
-   El selector cambia de contenido según la fuente: en el Gobierno se
-   filtra por área y en el Parlamento por grupo parlamentario, que es
-   justo lo que pedía el caso de uso 2 de la guía.
------------------------------------------------------------------- */
-function poblarDimension(){
-  const sel = document.getElementById("dimension");
-  const esParlamento = estado.fuente === "1";
-  const lista = esParlamento
-    ? C.grupo.map((g,i) => ({v: "g"+i, t: g}))
-    : C.area.map((a,i) => ({v: "a"+i, t: DATOS.nombres_area[a] || a}));
-  lista.sort((x,y) => x.t.localeCompare(y.t,"es"));
+/* ==================================================================
+   Filtrado
 
-  sel.innerHTML = `<option value="">${esParlamento ? "Todos los grupos" : "Todas las áreas"}</option>`
-    + lista.map(o => `<option value="${o.v}">${o.t}</option>`).join("");
-  sel.value = "";
-  estado.dimension = "";
+   `omitir` deja fuera una faceta para poder contar cuántos resultados
+   daría cada una de sus opciones sobre lo ya filtrado por las demás.
+   Sin eso los recuentos de la nube mentirían: dirían cuántas entradas
+   hay en total y no cuántas quedan con los filtros puestos.
+   ================================================================== */
+
+function conjuntoEtiquetas(){
+  const ids = new Set();
+  estado.etiquetas.forEach(clave => {
+    const i = C.etiquetas.indexOf(clave);
+    if (i !== -1) ids.add(i);
+  });
+  return ids;
 }
 
-function filtrar(){
+function filtrar(omitir){
   const texto = normalizar(estado.texto).trim();
   const palabras = texto ? texto.split(/\s+/) : [];
+  const idsEti = omitir === "etiquetas" ? null : conjuntoEtiquetas();
+  const usaEti = idsEti && estado.etiquetas.size > 0;
+  const usaEnte = omitir !== "entes" && estado.entes.size > 0;
+  const esGobierno = estado.fuente === "0";
 
-  return FILAS.filter((f, i) => {
-    if (String(f[IDX.fuente]) !== estado.fuente) return false;
-    if (estado.soloAlertas && !f[IDX.alerta]) return false;
-    if (estado.desde && f[IDX.fecha] < estado.desde) return false;
-    if (estado.hasta && f[IDX.fecha] > estado.hasta) return false;
+  const salida = [];
+  for (let i = 0; i < FILAS.length; i++){
+    const f = FILAS[i];
+    if (String(f[IDX.fuente]) !== estado.fuente) continue;
+    if (estado.soloAlertas && !f[IDX.alerta]) continue;
+    if (estado.desde && f[IDX.fecha] < estado.desde) continue;
+    if (estado.hasta && f[IDX.fecha] > estado.hasta) continue;
 
-    if (estado.dimension){
-      const tipo = estado.dimension[0], i = +estado.dimension.slice(1);
-      if (tipo === "a" && f[IDX.area] !== i) return false;
-      if (tipo === "g" && f[IDX.grupo] !== i) return false;
+    if (usaEnte){
+      if (esGobierno){
+        const a = f[IDX.area];
+        if (a === null || !estado.entes.has(C.area[a])) continue;
+      } else {
+        const g = f[IDX.grupo];
+        if (g === null || !PARTES_GRUPO[g].some(p => estado.entes.has(p))) continue;
+      }
+    }
+
+    if (usaEti){
+      const suyas = f[IDX.etiquetas] || [];
+      if (estado.modo === "todas"){
+        let todas = true;
+        idsEti.forEach(id => { if (!suyas.includes(id)) todas = false; });
+        if (!todas) continue;
+      } else if (!suyas.some(id => idsEti.has(id))) continue;
     }
 
     if (palabras.length){
       // Todas las palabras deben aparecer: buscar "vivienda lanzarote" no
       // debe devolver todo lo de vivienda más todo lo de Lanzarote.
       const heno = BUSCABLE[i];
-      if (!palabras.every(p => heno.includes(p))) return false;
+      let vale = true;
+      for (const p of palabras) if (!heno.includes(p)) { vale = false; break; }
+      if (!vale) continue;
     }
-    return true;
+    salida.push(f);
+  }
+  return salida;
+}
+
+function aplicar(reiniciarPagina = true){
+  filtradas = filtrar(null);
+  if (estado.orden === "asc") filtradas = filtradas.slice().reverse();
+  if (reiniciarPagina) estado.pagina = 1;
+
+  actualizarRecuentosEtiquetas();
+  actualizarRecuentosEntes();
+  pintarChipsActivos();
+  pintarGrafico();
+  pintarListado();
+  escribirEnlace();
+}
+
+/* ==================================================================
+   Etiquetas temáticas: la nube y sus recuentos
+   ================================================================== */
+
+function construirNube(){
+  const cont = $("nubes");
+  cont.innerHTML = "";
+  if (!ETIQUETAS.length){
+    cont.innerHTML = `<span class="modo-ayuda">Este volcado no trae etiquetas temáticas.
+      Se regenera con <code>transparencia exportar</code>.</span>`;
+    document.querySelector(".areas-cab").style.display = "none";
+    return;
+  }
+
+  GRUPOS_ETI.forEach((g, iGrupo) => {
+    const suyas = ETIQUETAS.filter(e => e.grupo === g.clave);
+    if (!suyas.length) return;
+    const nube = document.createElement("div");
+    nube.className = "nube";
+    nube.dataset.grupo = g.clave;
+    // El segundo bloque nace plegado: son áreas que el observatorio no vigila y
+    // compiten por la atención con las que sí. Están porque sin ellas el 39%
+    // del archivo no se podía recorrer, no porque tengan el mismo peso.
+    const plegado = iGrupo > 0;
+    nube.innerHTML = `<span class="grupo-tit">${escapar(g.nombre)}</span>` +
+      suyas.map(e => `<button class="eti" data-eti="${e.clave}" data-color="${e.color}"
+          aria-pressed="false" ${plegado ? 'hidden' : ''}>${escapar(e.nombre)}
+          <span class="c" aria-hidden="true">·</span></button>`).join("") +
+      (plegado ? `<button class="mas-areas" data-desplegar="${g.clave}">
+          Ver ${suyas.length} áreas más</button>` : "");
+    cont.appendChild(nube);
+  });
+
+  cont.addEventListener("click", ev => {
+    const mas = ev.target.closest("[data-desplegar]");
+    if (mas){
+      mas.parentElement.querySelectorAll(".eti").forEach(b => b.hidden = false);
+      mas.remove();
+      return;
+    }
+    const b = ev.target.closest("[data-eti]");
+    if (b) alternarEtiqueta(b.dataset.eti);
   });
 }
 
-function aplicar(){
-  filtradas = filtrar();
-  pagina = 1;
-  pintarGrafico();
-  pintarListado();
+function alternarEtiqueta(clave){
+  if (estado.etiquetas.has(clave)) estado.etiquetas.delete(clave);
+  else estado.etiquetas.add(clave);
+  sincronizarNube();
+  aplicar();
 }
 
-/* ------------------------------------------------------------------
-   Gráfico de actividad. Se recalcula sobre el resultado filtrado, lo que
-   resuelve de paso el problema de escala: el Parlamento publica 23 veces
-   menos que el Gobierno y en un eje compartido sería una línea invisible,
-   pero al filtrar por fuente el eje se reescala y se lee bien.
------------------------------------------------------------------- */
+function sincronizarNube(){
+  document.querySelectorAll("#nubes [data-eti]").forEach(b => {
+    const puesta = estado.etiquetas.has(b.dataset.eti);
+    b.setAttribute("aria-pressed", String(puesta));
+    // Si una etiqueta marcada está plegada, hay que enseñarla: si no, el filtro
+    // estaría puesto y no se vería dónde quitarlo.
+    if (puesta && b.hidden){
+      b.parentElement.querySelectorAll(".eti").forEach(o => o.hidden = false);
+      const mas = b.parentElement.querySelector("[data-desplegar]");
+      if (mas) mas.remove();
+    }
+  });
+  document.querySelectorAll(".pill.eti-card").forEach(p => {
+    p.setAttribute("aria-pressed", String(estado.etiquetas.has(p.dataset.eti)));
+  });
+}
+
+function actualizarRecuentosEtiquetas(){
+  if (!ETIQUETAS.length) return;
+  // En «cualquiera» el recuento se calcula ignorando lo ya marcado, que es lo
+  // que responde a la pregunta «cuántas añade esta». En «todas» hay que contar
+  // sobre el resultado ya filtrado: si no, un área diría 229 cuando cruzarla
+  // con las marcadas deja tres, y el número invitaría a un callejón sin salida.
+  const base = (estado.modo === "todas" && estado.etiquetas.size)
+    ? filtradas : filtrar("etiquetas");
+  const cuenta = new Int32Array(C.etiquetas ? C.etiquetas.length : 0);
+  base.forEach(f => (f[IDX.etiquetas] || []).forEach(id => cuenta[id]++));
+
+  document.querySelectorAll("#nubes [data-eti]").forEach(b => {
+    const i = C.etiquetas.indexOf(b.dataset.eti);
+    const n = i === -1 ? 0 : cuenta[i];
+    const span = b.querySelector(".c");
+    if (span) span.textContent = miles(n);
+    b.dataset.vacia = n === 0 && !estado.etiquetas.has(b.dataset.eti) ? "1" : "0";
+    b.setAttribute("aria-label",
+      `${b.firstChild.textContent.trim()}, ${miles(n)} ${n === 1 ? "publicación" : "publicaciones"}`);
+  });
+}
+
+/* ==================================================================
+   Ente: consejería u órgano en el Gobierno, grupo en el Parlamento
+
+   Es el mismo hueco de pantalla con dos contenidos porque es la misma
+   pregunta —quién impulsa esto— formulada en dos instituciones.
+   ================================================================== */
+
+function poblarEntes(){
+  const esParlamento = estado.fuente === "1";
+  if (esParlamento){
+    const vistos = new Set();
+    PARTES_GRUPO.forEach(partes => partes.forEach(p => vistos.add(p)));
+    ENTES = [...vistos].map(p => ({clave: p, nombre: p}));
+  } else {
+    ENTES = (C.area || []).map(a => ({clave: a, nombre: DATOS.nombres_area[a] || a}));
+  }
+  ENTES.sort((x,y) => x.nombre.localeCompare(y.nombre, "es"));
+
+  $("tit-ente").textContent = esParlamento ? "Grupo parlamentario" : "Consejería u órgano";
+  $("ayuda-ente").textContent = esParlamento
+    ? "Una iniciativa firmada por varios grupos sale en todos."
+    : "";
+  $("etq-ente").textContent = esParlamento ? "Grupo" : "Ente";
+
+  $("opciones-ente").innerHTML = ENTES.map(e => `
+    <label class="opcion" data-ente="${escapar(e.clave)}">
+      <input type="checkbox" value="${escapar(e.clave)}">
+      <span class="txt">${escapar(e.nombre)}</span>
+      <span class="c">·</span>
+    </label>`).join("");
+}
+
+function actualizarRecuentosEntes(){
+  const base = filtrar("entes");
+  const cuenta = new Map();
+  const esGobierno = estado.fuente === "0";
+  base.forEach(f => {
+    if (esGobierno){
+      const a = f[IDX.area];
+      if (a !== null) cuenta.set(C.area[a], (cuenta.get(C.area[a]) || 0) + 1);
+    } else {
+      const g = f[IDX.grupo];
+      if (g !== null) PARTES_GRUPO[g].forEach(p => cuenta.set(p, (cuenta.get(p) || 0) + 1));
+    }
+  });
+
+  $("opciones-ente").querySelectorAll(".opcion").forEach(lab => {
+    const n = cuenta.get(lab.dataset.ente) || 0;
+    lab.querySelector(".c").textContent = miles(n);
+    lab.classList.toggle("vacia", n === 0);
+    lab.querySelector("input").checked = estado.entes.has(lab.dataset.ente);
+  });
+
+  const n = estado.entes.size;
+  $("n-ente").hidden = n === 0;
+  $("n-ente").textContent = n;
+  $("btn-ente").classList.toggle("con-valor", n > 0);
+}
+
+/* ==================================================================
+   Periodo
+   ================================================================== */
+
+function construirAtajosPeriodo(){
+  const hoy = FILAS[0][IDX.fecha];            // el volcado viene ordenado
+  const primera = FILAS[FILAS.length-1][IDX.fecha];
+  const anios = [];
+  for (let a = +hoy.slice(0,4); a >= +primera.slice(0,4); a--) anios.push(a);
+
+  const menos = (iso, dias) => {
+    // En UTC a propósito: con hora local, toISOString resta otra hora en
+    // Canarias durante el verano y el atajo se desplazaba un día.
+    const d = new Date(iso + "T00:00:00Z");
+    d.setUTCDate(d.getUTCDate() - dias);
+    return d.toISOString().slice(0,10);
+  };
+
+  const atajos = [
+    {id:"30d",  txt:"Últimos 30 días",  desde: menos(hoy,30),  hasta:""},
+    {id:"12m",  txt:"Últimos 12 meses", desde: menos(hoy,365), hasta:""},
+    ...anios.map(a => ({id:"a"+a, txt:String(a), desde:`${a}-01-01`, hasta:`${a}-12-31`})),
+    {id:"todo", txt:"Todo", desde:"", hasta:""},
+  ];
+
+  $("atajos-periodo").innerHTML = atajos.map(a =>
+    `<button data-desde="${a.desde}" data-hasta="${a.hasta}" aria-pressed="false">${a.txt}</button>`
+  ).join("");
+
+  $("atajos-periodo").addEventListener("click", ev => {
+    const b = ev.target.closest("button");
+    if (!b) return;
+    estado.desde = b.dataset.desde;
+    estado.hasta = b.dataset.hasta;
+    sincronizarPeriodo();
+    aplicar();
+  });
+}
+
+function sincronizarPeriodo(){
+  $("desde").value = estado.desde;
+  $("hasta").value = estado.hasta;
+  $("atajos-periodo").querySelectorAll("button").forEach(b => {
+    b.setAttribute("aria-pressed",
+      String(b.dataset.desde === estado.desde && b.dataset.hasta === estado.hasta));
+  });
+  const hay = estado.desde || estado.hasta;
+  $("btn-periodo").classList.toggle("con-valor", !!hay);
+  $("etq-periodo").textContent = !hay ? "Periodo"
+    : estado.desde && estado.hasta ? `${fechaCorta(estado.desde)} – ${fechaCorta(estado.hasta)}`
+    : estado.desde ? `Desde ${fechaCorta(estado.desde)}` : `Hasta ${fechaCorta(estado.hasta)}`;
+}
+
+/* ==================================================================
+   Filtros activos: qué está puesto y cómo se quita
+   ================================================================== */
+
+function pintarChipsActivos(){
+  const chips = [];
+  const anadir = (tipo, valor, texto) =>
+    chips.push(`<button class="chip" data-quita="${tipo}" data-valor="${escapar(valor)}">
+      ${escapar(texto)}<span class="x" aria-hidden="true">×</span>
+      <span class="oculto-visualmente">Quitar filtro</span></button>`);
+
+  if (estado.texto) anadir("texto", "", `«${estado.texto}»`);
+  if (estado.desde || estado.hasta) anadir("periodo", "", $("etq-periodo").textContent);
+  estado.entes.forEach(e => {
+    const o = ENTES.find(x => x.clave === e);
+    anadir("ente", e, o ? o.nombre : e);
+  });
+  estado.etiquetas.forEach(t => {
+    const o = ETIQUETAS.find(x => x.clave === t);
+    anadir("etiqueta", t, o ? o.nombre : t);
+  });
+  if (estado.soloAlertas) anadir("alertas", "", "Solo decisiones");
+
+  $("chips-activos").innerHTML = chips.join("");
+  $("activos").hidden = chips.length === 0;
+}
+
+$("activos").addEventListener("click", ev => {
+  const b = ev.target.closest("[data-quita]");
+  if (!b) return;
+  const { quita, valor } = b.dataset;
+  if (quita === "texto"){ estado.texto = ""; $("buscar").value = ""; }
+  if (quita === "periodo"){ estado.desde = ""; estado.hasta = ""; sincronizarPeriodo(); }
+  if (quita === "ente"){ estado.entes.delete(valor); }
+  if (quita === "etiqueta"){ estado.etiquetas.delete(valor); sincronizarNube(); }
+  if (quita === "alertas"){
+    estado.soloAlertas = false;
+    $("solo-alertas").checked = false;
+    $("lab-alertas").classList.remove("activo");
+  }
+  aplicar();
+});
+
+/* ==================================================================
+   Gráfico de actividad
+
+   Se recalcula sobre el resultado filtrado, lo que resuelve de paso el
+   problema de escala: el Parlamento publica 23 veces menos que el
+   Gobierno y en un eje compartido sería una línea invisible, pero al
+   filtrar por fuente el eje se reescala y se lee bien.
+
+   Además es un control, no solo una salida: pulsar un mes lo acota y
+   arrastrar selecciona un tramo. Es la forma más directa de filtrar por
+   fecha, porque se elige mirando dónde hay actividad en vez de teclear
+   dos fechas a ciegas.
+   ================================================================== */
+
+let mesesEje = [];
+
 function pintarGrafico(){
   const esParlamento = estado.fuente === "1";
-  const clave = esParlamento ? "parlamento" : "gobierno";
-  const color = serie(clave);
+  const color = css(esParlamento ? "--serie-par" : "--serie-gob");
 
   const porMes = d3.rollup(filtradas, v => v.length, f => f[IDX.fecha].slice(0,7));
-  const meses = DATOS.actividad.map(a => a.mes);
-  const datos = meses.map(m => ({mes: m, n: porMes.get(m) ?? 0}));
+  mesesEje = DATOS.actividad.map(a => a.mes);
+  const datos = mesesEje.map(m => ({mes: m, n: porMes.get(m) ?? 0}));
 
-  const cont = document.getElementById("grafico");
+  const cont = $("grafico");
+  // Al repintar se destruye la capa que escucha el puntero, así que su
+  // `pointerleave` no llega a dispararse: sin esto el tooltip se quedaba
+  // colgado en pantalla con el recuento de antes de filtrar.
+  ocultarTooltip();
   cont.innerHTML = "";
   const ancho = cont.clientWidth || 900;
-  const alto = 132, m = {arriba: 8, derecha: 4, abajo: 22, izquierda: 34};
+  const alto = 148, m = {arriba: 8, derecha: 4, abajo: 22, izquierda: 34};
 
   const svg = d3.select(cont).append("svg")
     .attr("width", ancho).attr("height", alto)
     .attr("role", "img")
     .attr("aria-label", `Publicaciones por mes · ${esParlamento ? "Parlamento" : "Gobierno"} de Canarias`);
 
-  const x = d3.scaleBand().domain(meses)
+  const x = d3.scaleBand().domain(mesesEje)
     .range([m.izquierda, ancho - m.derecha]).padding(0.22);
   const y = d3.scaleLinear().domain([0, d3.max(datos, d => d.n) || 1]).nice()
     .range([alto - m.abajo, m.arriba]);
@@ -442,7 +970,7 @@ function pintarGrafico(){
   // escribe en la primera etiqueta de cada año, porque la serie arranca en mayo
   // y los eneros nunca caen en múltiplos de tres: sin esto el eje decía
   // "may ago nov feb may…" y no había forma de saber de qué año era cada barra.
-  const visibles = meses.filter((_, i) => i % 3 === 0);
+  const visibles = mesesEje.filter((_, i) => i % 3 === 0);
   const primerTickDelAnio = new Set();
   let anioPrevio = null;
   visibles.forEach(v => {
@@ -464,33 +992,71 @@ function pintarGrafico(){
       .attr("font-weight", 600)
       .attr("fill", "var(--text-main)"));
 
-  svg.append("g").selectAll("rect").data(datos).join("rect")
+  const barras = svg.append("g").selectAll("rect").data(datos).join("rect")
       .attr("class","barra")
       .attr("fill", color)
       .attr("x", d => x(d.mes))
       .attr("width", x.bandwidth())
       .attr("y", d => y(d.n))
       .attr("height", d => Math.max(0, y(0) - y(d.n)))
-      .attr("rx", 2)
-      .on("pointerenter", (ev, d) => mostrarTooltip(ev, d))
-      .on("pointermove", moverTooltip)
-      .on("pointerleave", ocultarTooltip);
+      .attr("rx", 2);
 
-  // Con una sola serie no hace falta leyenda: el título nombra la fuente.
-  document.getElementById("leyenda").innerHTML = "";
-  document.getElementById("chart-tit").textContent =
+  // El pincel va encima de las barras y les tapa el puntero, así que el
+  // resaltado y el tooltip se calculan desde su propia capa: una sola superficie
+  // atiende pasar por encima, pulsar y arrastrar, sin que compitan entre sí.
+  const paso = x.step();
+  const mesEn = px => {
+    const i = Math.floor((px - m.izquierda) / paso);
+    return mesesEje[Math.max(0, Math.min(mesesEje.length - 1, i))];
+  };
+
+  const pincel = d3.brushX()
+    .extent([[m.izquierda, m.arriba], [ancho - m.derecha, alto - m.abajo]])
+    .on("end", function(ev){
+      if (!ev.sourceEvent) return;                 // movimiento programático
+      if (!ev.selection){
+        // Sin selección es una pulsación: acota ese mes.
+        const [px] = d3.pointer(ev.sourceEvent, this);
+        const mes = mesEn(px);
+        estado.desde = mes + "-01";
+        estado.hasta = finDeMes(mes);
+      } else {
+        const [a, b] = ev.selection;
+        const m1 = mesEn(a), m2 = mesEn(b - 1);
+        estado.desde = m1 + "-01";
+        estado.hasta = finDeMes(m2);
+        d3.select(this).call(pincel.move, null);
+      }
+      sincronizarPeriodo();
+      aplicar();
+    });
+
+  const capa = svg.append("g").attr("class","pincel").call(pincel);
+
+  capa.select(".overlay")
+    .on("pointermove.tip", function(ev){
+      const [px] = d3.pointer(ev, this);
+      const mes = mesEn(px);
+      const d = datos[mesesEje.indexOf(mes)];
+      barras.attr("opacity", b => b.mes === mes ? 1 : .45);
+      mostrarTooltip(ev, d);
+    })
+    .on("pointerleave.tip", () => { barras.attr("opacity", 1); ocultarTooltip(); });
+
+  $("chart-tit").textContent =
     esParlamento ? "Iniciativas por mes · Parlamento de Canarias"
                  : "Publicaciones por mes · Gobierno de Canarias";
-  document.getElementById("chart-sub").textContent =
-    filtradas.length === FILAS.filter(f => String(f[IDX.fuente]) === estado.fuente).length
-      ? "Sin filtros aplicados" : "Sobre el resultado filtrado";
+  const totalFuente = FILAS.reduce((n,f) => n + (String(f[IDX.fuente]) === estado.fuente ? 1 : 0), 0);
+  $("chart-sub").textContent = filtradas.length === totalFuente
+    ? "Sin filtros aplicados" : "Sobre el resultado filtrado";
 }
 
-const tooltip = document.getElementById("tooltip");
+const tooltip = $("tooltip");
 function mostrarTooltip(ev, d){
   const etiqueta = estado.fuente === "1" ? "Iniciativas" : "Publicaciones";
   tooltip.innerHTML = `<div class="t">${mesLargo(d.mes)}</div>
-    <div><span>${etiqueta}</span><span>${d.n}</span></div>`;
+    <div class="fila"><span>${etiqueta}</span><span>${miles(d.n)}</span></div>
+    <div class="pista">Pulsa para acotar este mes</div>`;
   tooltip.style.opacity = 1;
   moverTooltip(ev);
 }
@@ -502,6 +1068,10 @@ function moverTooltip(ev){
   tooltip.style.left = x + "px"; tooltip.style.top = y + "px";
 }
 function ocultarTooltip(){ tooltip.style.opacity = 0; }
+
+/* ==================================================================
+   Listado y paginación
+   ================================================================== */
 
 function resaltar(texto){
   const palabras = normalizar(estado.texto).trim().split(/\s+/).filter(Boolean);
@@ -524,25 +1094,26 @@ function resaltar(texto){
   });
   return salida + escapar(texto.slice(cursor));
 }
-function escapar(s){
-  return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-}
 
 function pintarListado(){
   const total = filtradas.length;
-  const paginas = Math.max(1, Math.ceil(total / POR_PAGINA));
-  pagina = Math.min(pagina, paginas);
-  const trozo = filtradas.slice((pagina-1)*POR_PAGINA, pagina*POR_PAGINA);
+  const paginas = Math.max(1, Math.ceil(total / estado.porPagina));
+  estado.pagina = Math.min(estado.pagina, paginas);
+  const trozo = filtradas.slice((estado.pagina-1)*estado.porPagina, estado.pagina*estado.porPagina);
 
-  document.getElementById("contador").innerHTML = total
-    ? `<b>${total.toLocaleString("es-ES")}</b> ${total === 1 ? "publicación" : "publicaciones"}`
+  $("contador").innerHTML = total
+    ? `<b>${miles(total)}</b> ${total === 1 ? "publicación" : "publicaciones"}`
     : "Sin resultados";
 
-  const cont = document.getElementById("listado");
+  const cont = $("listado");
   if (!total){
     cont.innerHTML = `<div class="vacio"><strong>No hay publicaciones que coincidan</strong>
-      Prueba a quitar algún filtro o a buscar otra palabra.</div>`;
-    document.getElementById("paginacion").innerHTML = "";
+      Prueba a quitar algún filtro, a marcar menos áreas o a buscar otra palabra.
+      ${estado.modo === "todas" && estado.etiquetas.size > 1
+        ? '<br><button class="pill" id="a-cualquiera">Probar con «cualquiera» de las áreas</button>' : ""}</div>`;
+    $("paginacion").innerHTML = "";
+    const b = $("a-cualquiera");
+    if (b) b.addEventListener("click", () => cambiarModo("cualquiera"));
     return;
   }
 
@@ -555,7 +1126,13 @@ function pintarListado(){
     const territorio = f[IDX.territorio] !== null ? C.territorio[f[IDX.territorio]] : "Canarias";
     const situacion = f[IDX.situacion] !== null ? C.situacion[f[IDX.situacion]] : null;
     const tipo = f[IDX.tipo] !== null ? C.tipo[f[IDX.tipo]] : null;
-    const materias = (f[IDX.materias]||[]).map(i => C.materias[i]);
+
+    // Los distintivos de área son botones: pulsar uno lo añade al filtro. Es el
+    // camino natural cuando se encuentra algo interesante y se quiere ver más
+    // de lo mismo, y evita tener que subir a buscarlo en la nube.
+    const etiquetas = (f[IDX.etiquetas] || []).map(i => C.etiquetas[i])
+      .map(clave => ETIQUETAS.find(e => e.clave === clave)).filter(Boolean)
+      .sort((a,b) => ORDEN_ETI.get(a.clave) - ORDEN_ETI.get(b.clave));
 
     return `<article class="tarjeta">
       <div class="origen ${esGob ? "gob" : "par"}">${origen}</div>
@@ -565,88 +1142,232 @@ function pintarListado(){
       <div class="pills">
         ${f[IDX.alerta] ? '<span class="pill alerta">Decisión</span>' : ""}
         ${tipo ? `<span class="pill tipo">${escapar(tipo)}</span>` : ""}
-        ${materias.map(m => `<span class="pill">${escapar(m.replace(/_/g," "))}</span>`).join("")}
+        ${etiquetas.map(e => `<button class="pill eti-card" data-eti="${e.clave}"
+            data-color="${e.color}" aria-pressed="${estado.etiquetas.has(e.clave)}"
+            title="Filtrar por ${escapar(e.nombre)}">${escapar(e.nombre)}</button>`).join("")}
         <a class="enlace" href="${escapar(f[IDX.url])}" target="_blank" rel="noopener">Ver publicación →</a>
       </div>
     </article>`;
   }).join("");
 
-  pintarPaginacion(paginas);
+  pintarPaginacion(paginas, total);
 }
 
-function pintarPaginacion(paginas){
-  const nav = document.getElementById("paginacion");
-  if (paginas <= 1){ nav.innerHTML = ""; return; }
+$("listado").addEventListener("click", ev => {
+  const b = ev.target.closest(".pill.eti-card");
+  if (b) alternarEtiqueta(b.dataset.eti);
+});
+
+function pintarPaginacion(paginas, total){
+  const nav = $("paginacion");
+  if (paginas <= 1){
+    nav.innerHTML = total > 1
+      ? `<span class="puntos">${miles(total)} resultados en una sola página</span>` : "";
+    return;
+  }
   const botones = [];
   const anadir = n => botones.push(
-    `<button data-p="${n}" ${n === pagina ? 'aria-current="page"' : ""}>${n}</button>`);
+    `<button data-p="${n}" ${n === estado.pagina ? 'aria-current="page"' : ""}
+      aria-label="Página ${n} de ${paginas}">${n}</button>`);
 
-  botones.push(`<button data-p="${pagina-1}" ${pagina === 1 ? "disabled" : ""}
+  botones.push(`<button data-p="${estado.pagina-1}" ${estado.pagina === 1 ? "disabled" : ""}
                 aria-label="Página anterior">←</button>`);
-  const cerca = new Set([1, paginas, pagina, pagina-1, pagina+1]);
+  const cerca = new Set([1, paginas, estado.pagina, estado.pagina-1, estado.pagina+1]);
   let ultima = 0;
   [...cerca].filter(n => n >= 1 && n <= paginas).sort((a,b) => a-b).forEach(n => {
     if (n - ultima > 1) botones.push('<span class="puntos">…</span>');
     anadir(n); ultima = n;
   });
-  botones.push(`<button data-p="${pagina+1}" ${pagina === paginas ? "disabled" : ""}
+  botones.push(`<button data-p="${estado.pagina+1}" ${estado.pagina === paginas ? "disabled" : ""}
                 aria-label="Página siguiente">→</button>`);
   nav.innerHTML = botones.join("");
 }
 
-/* ---------------------- interacción ---------------------- */
+$("paginacion").addEventListener("click", e => {
+  const b = e.target.closest("button[data-p]");
+  if (!b || b.disabled) return;
+  estado.pagina = +b.dataset.p;
+  pintarListado();
+  escribirEnlace();
+  document.querySelector(".resumen").scrollIntoView({behavior:"smooth", block:"start"});
+});
+
+/* ==================================================================
+   Enlace compartible
+
+   Los filtros viajan en el fragmento de la dirección, así que una
+   consulta se puede pegar en un correo o citar en un informe y quien la
+   abra ve exactamente lo mismo. En una herramienta de fiscalización eso
+   no es comodidad: es que el dato sea verificable por otra persona.
+   ================================================================== */
+
+function escribirEnlace(){
+  const p = new URLSearchParams();
+  if (estado.fuente !== "0") p.set("f", estado.fuente);
+  if (estado.texto) p.set("q", estado.texto);
+  if (estado.desde) p.set("d", estado.desde);
+  if (estado.hasta) p.set("h", estado.hasta);
+  if (estado.entes.size) p.set("e", [...estado.entes].join("|"));
+  if (estado.etiquetas.size) p.set("t", [...estado.etiquetas].join("|"));
+  if (estado.modo !== "cualquiera") p.set("m", estado.modo);
+  if (estado.soloAlertas) p.set("a", "1");
+  if (estado.orden !== "desc") p.set("o", estado.orden);
+  if (estado.porPagina !== 10) p.set("n", String(estado.porPagina));
+  if (estado.pagina > 1) p.set("p", String(estado.pagina));
+  const s = p.toString();
+  history.replaceState(null, "", s ? "#" + s : location.pathname + location.search);
+}
+
+function leerEnlace(){
+  const p = new URLSearchParams(location.hash.slice(1));
+  if (!p.toString()) return;
+  if (p.get("f") === "1") estado.fuente = "1";
+  estado.texto = p.get("q") || "";
+  estado.desde = p.get("d") || "";
+  estado.hasta = p.get("h") || "";
+  (p.get("e") || "").split("|").filter(Boolean).forEach(v => estado.entes.add(v));
+  (p.get("t") || "").split("|").filter(Boolean).forEach(v => estado.etiquetas.add(v));
+  if (p.get("m") === "todas") estado.modo = "todas";
+  estado.soloAlertas = p.get("a") === "1";
+  if (p.get("o") === "asc") estado.orden = "asc";
+  const n = +p.get("n"); if ([10,25,50].includes(n)) estado.porPagina = n;
+  const pag = +p.get("p"); if (pag > 0) estado.pagina = pag;
+}
+
+// Pegar un enlace en la barra de direcciones de una pestaña ya abierta no
+// recarga la página: cambia el fragmento y nada más. Sin esto, quien reciba una
+// consulta compartida y la pegue encima de la que tiene abierta vería la suya.
+addEventListener("hashchange", () => {
+  Object.assign(estado, {fuente:"0", texto:"", desde:"", hasta:"", modo:"cualquiera",
+                         soloAlertas:false, orden:"desc", porPagina:10, pagina:1});
+  estado.entes.clear();
+  estado.etiquetas.clear();
+  leerEnlace();
+  poblarEntes();
+  sincronizarControles();
+  aplicar(false);
+});
+
+function sincronizarControles(){
+  $("buscar").value = estado.texto;
+  $("solo-alertas").checked = estado.soloAlertas;
+  $("lab-alertas").classList.toggle("activo", estado.soloAlertas);
+  $("orden").value = estado.orden;
+  $("por-pagina").value = String(estado.porPagina);
+  document.querySelectorAll(".conmutador button").forEach(b =>
+    b.setAttribute("aria-pressed", String(b.dataset.fuente === estado.fuente)));
+  document.querySelectorAll(".modo button").forEach(b =>
+    b.setAttribute("aria-pressed", String(b.dataset.modo === estado.modo)));
+  $("ayuda-modo").textContent = estado.modo === "todas"
+    ? "Salen solo las entradas que tratan de todas a la vez."
+    : "Marca varias: salen las entradas que tratan de alguna de ellas.";
+  sincronizarPeriodo();
+  sincronizarNube();
+}
+
+/* ==================================================================
+   Interacción
+   ================================================================== */
+
 document.querySelectorAll(".conmutador button").forEach(b => {
   b.addEventListener("click", () => {
+    if (estado.fuente === b.dataset.fuente) return;
+    estado.fuente = b.dataset.fuente;
+    // El ente cambia de significado al cambiar de fuente —consejería frente a
+    // grupo parlamentario—, así que lo marcado deja de tener sentido y se quita.
+    estado.entes.clear();
     document.querySelectorAll(".conmutador button")
       .forEach(o => o.setAttribute("aria-pressed", String(o === b)));
-    estado.fuente = b.dataset.fuente;
-    poblarDimension();
+    poblarEntes();
     aplicar();
   });
 });
 
 let temporizador;
-document.getElementById("buscar").addEventListener("input", e => {
+$("buscar").addEventListener("input", e => {
   clearTimeout(temporizador);
   // Con 16.000 filas, filtrar en cada pulsación se nota al teclear
-  temporizador = setTimeout(() => { estado.texto = e.target.value; aplicar(); }, 180);
+  temporizador = setTimeout(() => { estado.texto = e.target.value.trim(); aplicar(); }, 180);
 });
 
 ["desde","hasta"].forEach(id => {
-  document.getElementById(id).addEventListener("change", e => {
-    estado[id] = e.target.value; aplicar();
+  $(id).addEventListener("change", e => {
+    estado[id] = e.target.value;
+    sincronizarPeriodo();
+    aplicar();
   });
 });
 
-document.getElementById("dimension").addEventListener("change", e => {
-  estado.dimension = e.target.value; aplicar();
+$("opciones-ente").addEventListener("change", e => {
+  const v = e.target.value;
+  if (e.target.checked) estado.entes.add(v); else estado.entes.delete(v);
+  aplicar();
 });
 
-document.getElementById("solo-alertas").addEventListener("change", e => {
+document.querySelectorAll(".modo button").forEach(b =>
+  b.addEventListener("click", () => cambiarModo(b.dataset.modo)));
+
+function cambiarModo(modo){
+  estado.modo = modo;
+  document.querySelectorAll(".modo button").forEach(o =>
+    o.setAttribute("aria-pressed", String(o.dataset.modo === modo)));
+  $("ayuda-modo").textContent = modo === "todas"
+    ? "Salen solo las entradas que tratan de todas a la vez."
+    : "Marca varias: salen las entradas que tratan de alguna de ellas.";
+  aplicar();
+}
+
+$("solo-alertas").addEventListener("change", e => {
   estado.soloAlertas = e.target.checked;
-  document.getElementById("lab-alertas").classList.toggle("activo", e.target.checked);
+  $("lab-alertas").classList.toggle("activo", e.target.checked);
   aplicar();
 });
 
-document.getElementById("limpiar").addEventListener("click", () => {
-  Object.assign(estado, {fuente:"0", texto:"", desde:"", hasta:"", dimension:"", soloAlertas:false});
-  document.getElementById("buscar").value = "";
-  document.getElementById("desde").value = "";
-  document.getElementById("hasta").value = "";
-  document.getElementById("solo-alertas").checked = false;
-  document.getElementById("lab-alertas").classList.remove("activo");
-  document.querySelectorAll(".conmutador button")
-    .forEach(b => b.setAttribute("aria-pressed", String(b.dataset.fuente === "0")));
-  poblarDimension();
+$("orden").addEventListener("change", e => { estado.orden = e.target.value; aplicar(); });
+$("por-pagina").addEventListener("change", e => {
+  estado.porPagina = +e.target.value; aplicar();
+});
+
+$("limpiar").addEventListener("click", () => {
+  Object.assign(estado, {texto:"", desde:"", hasta:"", modo:"cualquiera", soloAlertas:false, pagina:1});
+  estado.entes.clear();
+  estado.etiquetas.clear();
+  sincronizarControles();
   aplicar();
 });
 
-document.getElementById("paginacion").addEventListener("click", e => {
-  const b = e.target.closest("button[data-p]");
-  if (!b || b.disabled) return;
-  pagina = +b.dataset.p;
-  pintarListado();
-  document.querySelector(".resumen").scrollIntoView({behavior:"smooth", block:"start"});
+document.querySelectorAll("[data-limpia]").forEach(b => {
+  b.addEventListener("click", () => {
+    if (b.dataset.limpia === "periodo"){ estado.desde = ""; estado.hasta = ""; sincronizarPeriodo(); }
+    if (b.dataset.limpia === "ente") estado.entes.clear();
+    aplicar();
+  });
+});
+
+/* --- desplegables: abrir, cerrar y devolver el foco --- */
+function cerrarPaneles(salvo){
+  document.querySelectorAll(".desplegable").forEach(d => {
+    if (d === salvo) return;
+    d.querySelector(".panel").hidden = true;
+    d.querySelector(".disparador").setAttribute("aria-expanded", "false");
+  });
+}
+document.querySelectorAll(".desplegable .disparador").forEach(b => {
+  b.addEventListener("click", () => {
+    const d = b.closest(".desplegable");
+    const abierto = b.getAttribute("aria-expanded") === "true";
+    cerrarPaneles(d);
+    b.setAttribute("aria-expanded", String(!abierto));
+    d.querySelector(".panel").hidden = abierto;
+  });
+});
+document.addEventListener("click", ev => {
+  if (!ev.target.closest(".desplegable")) cerrarPaneles(null);
+});
+document.addEventListener("keydown", ev => {
+  if (ev.key !== "Escape") return;
+  const abierto = document.querySelector('.disparador[aria-expanded="true"]');
+  if (abierto){ cerrarPaneles(null); abierto.focus(); }
 });
 
 /* ---------------------- tema claro / oscuro ----------------------
@@ -654,14 +1375,15 @@ document.getElementById("paginacion").addEventListener("click", e => {
    preferencia del sistema; en cuanto se pulsa el botón, gana lo elegido. */
 function aplicarTema(tema){
   document.documentElement.setAttribute("data-tema", tema);
-  document.getElementById("tema-texto").textContent = tema === "oscuro" ? "Claro" : "Oscuro";
-  document.getElementById("tema").setAttribute(
-    "aria-label", tema === "oscuro" ? "Cambiar a tema claro" : "Cambiar a tema oscuro");
+  $("tema-texto").textContent = tema === "oscuro" ? "Claro" : "Oscuro";
+  $("tema").setAttribute("aria-label",
+    tema === "oscuro" ? "Cambiar a tema claro" : "Cambiar a tema oscuro");
   // El gráfico lee sus colores del CSS, así que hay que repintarlo
   if (DATOS) pintarGrafico();
 }
+aplicarTema(document.documentElement.getAttribute("data-tema") || "claro");
 
-document.getElementById("tema").addEventListener("click", () => {
+$("tema").addEventListener("click", () => {
   const nuevo = document.documentElement.getAttribute("data-tema") === "oscuro" ? "claro" : "oscuro";
   try { localStorage.setItem("tema-transparencia", nuevo); } catch (e) { /* modo privado */ }
   aplicarTema(nuevo);
@@ -677,8 +1399,18 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ev => {
 let redimension;
 addEventListener("resize", () => {
   clearTimeout(redimension);
-  redimension = setTimeout(pintarGrafico, 150);
+  redimension = setTimeout(() => { if (DATOS) pintarGrafico(); }, 150);
 });
+
+/* ---------------------- arranque ---------------------- */
+if (window.DATOS_TRANSPARENCIA){
+  arrancar(window.DATOS_TRANSPARENCIA);
+} else {
+  $("listado").innerHTML =
+    `<div class="vacio"><strong>No se han podido cargar los datos</strong>
+     Falta <code>datos.js</code> junto a este fichero.
+     Se regenera con <code>transparencia exportar</code>.</div>`;
+}
 </script>
 </body>
 </html>

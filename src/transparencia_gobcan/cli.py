@@ -301,8 +301,13 @@ def _resumen(entradas: list, registro, cargado: bool) -> None:
 def validar_config() -> None:
     """Comprueba la coherencia de los ficheros de configuración.
 
-    Verifica que las correspondencias de áreas apunten a claves existentes y que
-    los patrones de alertas compilen como expresiones regulares.
+    Verifica que las correspondencias de áreas apunten a claves existentes, que
+    los patrones de alertas compilen como expresiones regulares y que las
+    etiquetas temáticas de la interfaz declaren grupo y color conocidos.
+
+    El workflow de publicación lo ejecuta antes de tocar la base: un vocabulario
+    roto no tumba la página, la deja en pie con un filtro que no encuentra nada,
+    que es peor porque no avisa.
     """
     _configurar_registro()
     problemas: list[str] = []
@@ -321,6 +326,24 @@ def validar_config() -> None:
             except re.error as e:
                 problemas.append(f"El patrón {grupo}.{nombre} no compila: {e}")
 
+    etiquetas = cargar("etiquetas_tematicas")
+    grupos_eti = {g["clave"] for g in etiquetas["grupos"]}
+    familias = {"teal", "verde", "ambar", "rojo", "azul", "violeta", "naranja", "navy"}
+    vistas: set[str] = set()
+    for e in etiquetas["etiquetas"]:
+        clave = e["clave"]
+        if clave in vistas:
+            problemas.append(f"La etiqueta temática {clave!r} está repetida")
+        vistas.add(clave)
+        if e["grupo"] not in grupos_eti:
+            problemas.append(f"La etiqueta {clave!r} apunta al grupo inexistente {e['grupo']!r}")
+        if e["color"] not in familias:
+            problemas.append(f"La etiqueta {clave!r} usa la familia de color desconocida {e['color']!r}")
+        try:
+            re.compile(e["patron"], re.VERBOSE)
+        except re.error as err:
+            problemas.append(f"El patrón de la etiqueta {clave!r} no compila: {err}")
+
     territorio = cargar("territorio")
     municipios = [m for i in territorio["islas"] for m in i["municipios"]]
     repetidos = {m for m in municipios if municipios.count(m) > 1}
@@ -336,7 +359,8 @@ def validar_config() -> None:
     consola.print(
         f"[green]Configuración correcta[/green] · {len(claves)} áreas, "
         f"{len(areas['correspondencias_gobcan'])} correspondencias, "
-        f"{len(alertas['materias'])} materias, {len(municipios)} municipios"
+        f"{len(alertas['materias'])} materias, {len(etiquetas['etiquetas'])} etiquetas "
+        f"temáticas, {len(municipios)} municipios"
     )
 
 
@@ -614,6 +638,12 @@ def exportar(
         f"  peso {resumen['peso_mb']} MB · "
         f"de {resumen['desde']} a {resumen['hasta']} · {resumen['meses']} meses"
     )
+    # Una caída brusca de la cobertura significa que el vocabulario temático se
+    # ha quedado atrás respecto a cómo escribe la fuente. No falla nada: el
+    # filtro por área simplemente se vacía, que es peor.
+    cobertura = resumen["cobertura_etiquetas"]
+    color = "green" if cobertura >= 0.70 else "yellow"
+    consola.print(f"  etiqueta temática en el [{color}]{cobertura:.1%}[/{color}] de las entradas")
 
 
 if __name__ == "__main__":
