@@ -1,0 +1,341 @@
+# Vocabulario de etiquetas temáticas de la interfaz de consulta.
+#
+# POR QUÉ ES UN FICHERO APARTE Y NO LAS `materias` DE alertas.yaml
+#
+# Los dos vocabularios se parecen y hacen cosas opuestas.
+#
+# `alertas.materias` decide QUÉ SE NOTIFICA POR CORREO, y por eso tiene que ser
+# estrecho: cada término de más son correos de más en la bandeja de todo el
+# equipo. Está calibrado para 1,9 alertas al día.
+#
+# Este decide CÓMO SE NAVEGAN 16.000 entradas, y por eso tiene que ser ancho:
+# una etiqueta que no casa nunca no molesta a nadie, pero una entrada sin
+# etiquetar es una entrada que no aparece al filtrar. Medido sobre el volcado
+# del 27/07/2026, el vocabulario de alertas dejaba 8.855 entradas de 16.044
+# —el 55%— sin ninguna materia. Como taxonomía de navegación era inservible:
+# más de la mitad del archivo quedaba fuera de cualquier filtro.
+#
+# Reutilizarlo obligaba a elegir entre saturar el correo o dejar medio archivo
+# sin etiquetar. Son dos problemas distintos y llevan dos vocabularios
+# distintos. Es la misma razón por la que `clasificacion_area.yaml` ya está
+# separado de `alertas.yaml`.
+#
+# Cambiar este fichero NO cambia el volumen de correo. Las etiquetas se
+# calculan en `transparencia exportar`, fuera del clasificador de alertas y sin
+# tocar la base: basta reexportar para que la interfaz las recoja.
+#
+# LAS ETIQUETAS SE SOLAPAN A PROPÓSITO
+#
+# Una entrada puede llevar varias, y las que más interesan las llevan: "cuatro
+# millones para viviendas adaptadas a personas con discapacidad" es vivienda Y
+# discapacidad, y tiene que salir en los dos filtros. Por eso el campo es una
+# lista y no una columna con un valor, y por eso la interfaz deja marcar varias
+# y elegir entre «cualquiera» y «todas».
+#
+# CÓMO SE ESCRIBEN LOS PATRONES
+#
+# Son expresiones regulares sobre el texto normalizado: minúsculas y sin tildes.
+# Se compilan con re.VERBOSE, así que LOS ESPACIOS LITERALES SE IGNORAN: todo
+# espacio con significado va como `\s+`. Escribir "salud mental" en vez de
+# "salud\s+mental" da un patrón que compila sin error y no encuentra nada.
+#
+# Y el plural va como `natural(es)?`, nunca como `naturales?`: lo segundo
+# significa "naturale" más una "s" opcional y no casa el singular. Los dos
+# fallos han ocurrido ya en este repositorio y los vigila tests/test_config.py.
+#
+# TRES FALSOS AMIGOS QUE COSTARON UNA REVISIÓN ENTERA
+#
+# Medidos sobre las 16.044 entradas del volcado, con el auditor que lista qué
+# literal dispara cada patrón. Los tres compilaban y parecían correctos:
+#
+#   `autonom[oa]s?`     casaba "Comunidad Autónoma" 326 veces y metía media
+#                       administración en el filtro de empleo. Ahora el
+#                       masculino va suelto y el femenino solo tras
+#                       "trabajadora": nadie llama "autónoma" a la comunidad.
+#   `universitari[oa]s?` casaba "Hospital Universitario" 388 veces y etiquetaba
+#                       de educación toda la sanidad hospitalaria.
+#   `cuidados`          casaba "Unidad de Continuidad de Cuidados", que es una
+#                       unidad clínica, no atención a la dependencia.
+#
+# La lección se repite: un patrón que compila no es un patrón que acierta. Hay
+# que mirar QUÉ literal dispara y cuántas veces, sobre el corpus real.
+
+version: 1
+fecha_revision: 2026-09-09
+
+# `grupo` separa la nube de filtros en dos: lo que el observatorio vigila y el
+# resto de la actividad de gobierno, que se etiqueta para que el archivo se
+# pueda recorrer entero pero no compite visualmente con lo primero.
+#
+# `color` es la familia cromática del distintivo, de la guía de estilo de
+# ODESOCAN. Las nueve etiquetas de contexto comparten la familia neutra a
+# propósito: el color queda para lo que el observatorio vigila y así la jerarquía
+# se lee de un vistazo, sin tener que leer los nombres. Las ocho familias están
+# verificadas a 4,5:1 sobre su propio fondo en los dos temas, que es el mínimo
+# de WCAG AA para texto pequeño; el teal corporativo no llegaba (3,0:1) y el
+# distintivo usa una variante más oscura, #007A6E, solo para el texto.
+grupos:
+  - clave: derechos_sociales
+    nombre: Derechos sociales
+  - clave: contexto
+    nombre: Otras áreas de gobierno
+
+etiquetas:
+
+  # ------------------------------------------------------------------
+  # Derechos sociales: el ámbito propio del observatorio.
+  # ------------------------------------------------------------------
+  - clave: vivienda
+    nombre: Vivienda
+    color: ambar
+    grupo: derechos_sociales
+    patron: >-
+      \b(viviendas?|alquiler(es)?|vpo|desahucios?|infravivienda|
+      emergencia\s+habitacional|licencias?\s+urbanistica(s)?|
+      suelo\s+residencial|hipotecas?|sinhogarismo|
+      alojamientos?\s+(social(es)?|protegid[oa]s?)|
+      parque\s+publico\s+de\s+vivienda|rehabilitacion\s+de\s+edificios?)\b
+
+  - clave: sanidad
+    nombre: Sanidad
+    color: verde
+    grupo: derechos_sociales
+    patron: >-
+      \b(sanidad|sanitari[oa]s?|hospital(es|ari[oa]s?)?|atencion\s+primaria|
+      listas?\s+de\s+espera|urgencias|consultorios?|centros?\s+de\s+salud|
+      quirofanos?|ambulancias?|servicio\s+canario\s+de\s+la\s+salud|
+      enfermeri?a|pacientes?|vacunacion|cribados?|trasplantes?|
+      farmacias?|medicament[oa]s?|cuidados\s+paliativos|
+      donacion(es)?\s+de\s+sangre|donar\s+sangre|donantes?|
+      hemodonacion|hemoterapia|\bichh\b|salud\s+publica)\b
+
+  - clave: salud_mental
+    nombre: Salud mental
+    color: teal
+    grupo: derechos_sociales
+    patron: >-
+      \b(salud\s+mental|psiquiatri[ac][oa]?s?|psicologic[oa]s?|psicologi?a|
+      suicidios?|conducta\s+suicida|adicciones?|drogodependencias?|
+      ludopati?as?|trastornos?\s+(mental(es)?|de\s+conducta|alimentari[oa]s?)|
+      bienestar\s+emocional|unidad(es)?\s+de\s+salud\s+mental)\b
+
+  # `cuidados` a secas queda fuera a propósito: casaba "Unidad de Continuidad
+  # de Cuidados", que es sanidad hospitalaria. Y `dependencias` en plural es
+  # casi siempre un edificio ("las dependencias municipales"), no una situación
+  # de dependencia, así que el plural solo entra con "personas" delante.
+  - clave: dependencia
+    nombre: Dependencia y cuidados
+    color: azul
+    grupo: derechos_sociales
+    patron: >-
+      \b(dependencia\b|situacion\s+de\s+dependencia|grados?\s+de\s+dependencia|
+      personas?\s+dependientes?|cuidador(es|as)?|
+      cuidados\s+(de\s+larga\s+duracion|en\s+el\s+hogar|profesional(es)?)|
+      teleasistencia|centros?\s+de\s+dia|residencias?\s+de\s+mayores|
+      sociosanitari[oa]s?|ayuda\s+a\s+domicilio|plazas?\s+residencial(es)?)\b
+
+  - clave: discapacidad
+    nombre: Discapacidad
+    color: azul
+    grupo: derechos_sociales
+    patron: >-
+      \b(discapacidad(es)?|accesibilidad\s+universal|
+      barreras?\s+arquitectonicas?|diversidad\s+funcional|
+      centros?\s+ocupacional(es)?|lengua\s+de\s+signos|
+      autismo|parali[sc]is\s+cerebral|
+      (personas?|alumnad[oa])\s+con\s+discapacidad|
+      centros?\s+especial(es)?\s+de\s+empleo|empleo\s+protegido)\b
+
+  - clave: mayores
+    nombre: Personas mayores
+    color: azul
+    grupo: derechos_sociales
+    patron: >-
+      \b(personas?\s+mayor(es)?|envejecimiento|tercera\s+edad|
+      pensionistas?|pensiones|soledad\s+no\s+deseada|
+      centros?\s+sociosanitari[oa]s?)\b
+
+  - clave: infancia_familias
+    nombre: Infancia y familias
+    color: violeta
+    grupo: derechos_sociales
+    patron: >-
+      \b(infancia|menores|ninos?\s+y\s+ninas?|adolescen(cia|tes?)|
+      juventud|jovenes|familias?\s+(numerosas?|monoparental(es)?|
+      en\s+riesgo|vulnerabl(es)?)|acogimiento\s+familiar|adopcion(es)?|
+      puntos?\s+de\s+encuentro\s+familiar|conciliacion\s+familiar|
+      escuelas?\s+infantil(es)?)\b
+
+  - clave: servicios_sociales
+    nombre: Servicios sociales
+    color: violeta
+    grupo: derechos_sociales
+    patron: >-
+      \b(servicios\s+sociales|renta\s+canaria\s+de\s+ciudadania|
+      ingreso\s+minimo\s+vital|prestaciones?\s+social(es)?|
+      exclusion\s+social|tercer\s+sector|voluntariad[oa]s?|
+      trabajador(es|as)?\s+social(es)?|ayudas?\s+social(es)?|
+      inclusion\s+(social|activa)|entidades?\s+social(es)?)\b
+
+  - clave: pobreza
+    nombre: Pobreza y emergencia social
+    color: rojo
+    grupo: derechos_sociales
+    patron: >-
+      \b(pobreza|arope|riesgo\s+de\s+exclusion|desigualdad(es)?\s+social(es)?|
+      bancos?\s+de\s+alimentos|comedor(es)?\s+social(es)?|
+      ayudas?\s+de\s+emergencia(\s+social)?|emergencia\s+social|
+      exclusion\s+residencial|personas?\s+sin\s+hogar|
+      vulnerabilidad\s+social|precariedad|carencia\s+material|
+      rentas?\s+minimas?)\b
+
+  # `autonom[oa]s?` casaba "Comunidad Autónoma" 326 veces. El masculino va
+  # suelto porque nadie llama "autónomo" a la comunidad; el femenino, solo
+  # detrás de "trabajadora". Y `paro` suelto casaba el verbo "paró", que pierde
+  # la tilde al normalizar, así que va siempre acompañado.
+  - clave: empleo
+    nombre: Empleo
+    color: rojo
+    grupo: derechos_sociales
+    patron: >-
+      \b(empleos?|desempleo|autonomos?|trabajador(es|as)?\s+autonom[oa]s?|
+      (tasa|paro)\s+de\s+paro|paro\s+(registrado|juvenil|de\s+larga\s+duracion)|
+      contratacion(es)?|convenios?\s+colectiv[oa]s?|salari[oa]s?|
+      personas\s+trabajadoras|huelgas?|siniestralidad\s+laboral|
+      accidentalidad\s+laboral|riesgos?\s+laboral(es)?|
+      formacion\s+(para\s+el\s+empleo|ocupacional)|
+      servicio\s+canario\s+de\s+empleo|mercado\s+laboral|
+      expedientes?\s+de\s+regulacion)\b
+
+  # `universitari[oa]s?` casaba "Hospital Universitario" 388 veces y etiquetaba
+  # de educación media sanidad. Solo entra acompañado.
+  - clave: educacion
+    nombre: Educación
+    color: violeta
+    grupo: derechos_sociales
+    patron: >-
+      \b(educacion|educativ[oa]s?|escolar(es|izacion)?|profesorado|
+      alumnad[oa]|universidad(es)?|comunidad\s+universitaria|
+      (estudiantes?|campus|grados?|master(es)?)\s+universitari[oa]s?|
+      formacion\s+profesional|comedor(es)?\s+escolar(es)?|becas?|
+      colegios?|institutos?\s+de\s+educacion|aulas?|conservatori[oa]s?|
+      investigacion\s+(cientifica|universitaria)|i\+d\+i)\b
+
+  - clave: igualdad_violencia
+    nombre: Igualdad y violencia de género
+    color: rojo
+    grupo: derechos_sociales
+    patron: >-
+      \b(violencias?\s+(de\s+genero|machistas?|sexual(es)?|vicarias?)|
+      maltrato|agresion(es)?\s+sexual(es)?|victimas?\s+de\s+violencia|
+      feminicidios?|perspectiva\s+de\s+genero|igualdad\s+de\s+genero|
+      brecha\s+salarial|lgtbi(q|\+)?|instituto\s+canario\s+de\s+igualdad|
+      corresponsabilidad)\b
+
+  - clave: migraciones
+    nombre: Migraciones
+    color: naranja
+    grupo: derechos_sociales
+    patron: >-
+      \b((in)?migracion(es)?|(in)?migrantes|migratori[oa]s?|
+      menores\s+no\s+acompanad[oa]s|asilo|refugiad[oa]s?|
+      cayucos?|pateras?|extranjeri?a|
+      (centros?|red|sistema|plazas?)\s+de\s+acogida)\b
+
+  # ------------------------------------------------------------------
+  # Otras áreas de gobierno: no son el objeto del observatorio, pero sin
+  # ellas el 39% del archivo quedaba sin etiqueta y no se podía recorrer.
+  # ------------------------------------------------------------------
+  - clave: economia
+    nombre: Economía
+    color: navy
+    grupo: contexto
+    patron: >-
+      \b(economi?a|economic[oa]s?|producto\s+interior\s+bruto|
+      industrias?|comercios?|pymes?|tejido\s+empresarial|
+      inversion(es)?\s+(publicas?|productivas?)|impuestos?|fiscalidad|igic|
+      presupuestos?\s+general(es)?|financiacion\s+autonomica|
+      fondos\s+europeos|deuda\s+publica|regimen\s+economico\s+y\s+fiscal)\b
+
+  - clave: territorio_aguas
+    nombre: Territorio y aguas
+    color: navy
+    grupo: contexto
+    patron: >-
+      \b(sequi?a|depuradoras?|desaladoras?|ordenacion\s+del\s+territorio|
+      ciclo\s+del\s+agua|emergencia\s+hidrica|saneamiento|
+      abastecimiento\s+de\s+agua|suelo\s+rustico|planeamiento\s+urbanistico|
+      consejos?\s+insular(es)?\s+de\s+aguas)\b
+
+  - clave: medio_ambiente
+    nombre: Medio ambiente y energía
+    color: navy
+    grupo: contexto
+    patron: >-
+      \b(transicion\s+ecologica|energi?as?\s+renovabl(es)?|cambio\s+climatico|
+      residuos|reciclaje|economia\s+circular|parques?\s+natural(es)?|
+      biodiversidad|emisiones|espacios?\s+protegid[oa]s?|
+      incendios?\s+forestal(es)?|autoconsumo|fotovoltaic[oa]s?)\b
+
+  - clave: movilidad
+    nombre: Movilidad y transporte
+    color: navy
+    grupo: contexto
+    patron: >-
+      \b(transportes?\s+(publico|regular|interurbano|maritimo|aereo)|
+      guaguas?|carreteras?|tranvi?as?|movilidad\s+sostenible|
+      puertos?\s+de\s+interes|aeropuertos?|titulos?\s+de\s+transporte|
+      obligaciones?\s+de\s+servicio\s+publico|carriles?\s+bici)\b
+
+  - clave: agricultura_pesca
+    nombre: Agricultura, ganadería y pesca
+    color: navy
+    grupo: contexto
+    patron: >-
+      \b(agricultura|agrari[oa]s?|agricultor(es|as)?|ganaderi?a|ganader[oa]s?|
+      pesca|pesquer[oa]s?|plataner[oa]s?|sector\s+primario|
+      soberania\s+alimentaria|denominacion(es)?\s+de\s+origen|
+      viticultura|bodegas?|poseican|regadi?os?)\b
+
+  - clave: turismo
+    nombre: Turismo
+    color: navy
+    grupo: contexto
+    patron: >-
+      \b(turismo|turistic[oa]s?|turistas?|plazas?\s+alojativas?|
+      vivienda\s+vacacional|promocion\s+turistica|
+      alojamientos?\s+turistic[oa]s?)\b
+
+  - clave: cultura_deporte
+    nombre: Cultura y deporte
+    color: navy
+    grupo: contexto
+    patron: >-
+      \b(cultura(l(es)?)?|museos?|filmoteca|bibliotecas?|
+      patrimonio\s+(historico|cultural|mundial)|festival(es)?|
+      deportes?|deportistas?|deportiv[oa]s?|actividad\s+fisica|
+      audiovisual(es)?|artes\s+escenicas|canarias\s+crea|
+      teatros?|exposicion(es)?|conciertos?|\bmuna\b|
+      espacio\s+la\s+granja|casa\s+de\s+colon)\b
+
+  - clave: seguridad_emergencias
+    nombre: Seguridad y emergencias
+    color: navy
+    grupo: contexto
+    patron: >-
+      \b(emergencias?|proteccion\s+civil|policias?\s+(autonomica|local|nacional)|
+      bomberos?|1-1-2|112|guardia\s+civil|seguridad\s+ciudadana|
+      rescates?|simulacros?|plan(es)?\s+de\s+autoproteccion|
+      alerta\s+(maxima|por)|volcan(ica)?)\b
+
+  - clave: administracion_justicia
+    nombre: Administración y justicia
+    color: navy
+    grupo: contexto
+    patron: >-
+      \b(administracion(es)?\s+publicas?|funcion\s+publica|oposiciones?|
+      empleados?\s+publicos?|contratacion\s+publica|
+      simplificacion\s+administrativa|administracion\s+electronica|
+      justicia|juzgados?|tribunal(es)?|sedes?\s+judicial(es)?|
+      asistencia\s+juridica\s+gratuita|registros?\s+civil(es)?|
+      transparencia\s+(y\s+)?(participacion|institucional))\b

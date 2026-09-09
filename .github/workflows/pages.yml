@@ -1,0 +1,128 @@
+# Publicación de la interfaz de consulta en GitHub Pages.
+#
+# QUÉ SE PUBLICA Y QUÉ NO
+#
+# Se publica la carpeta `visualizacion/` con el volcado recién generado. El
+# volcado no está en el repositorio —son 8 MB que cambian en cada ejecución— así
+# que este workflow lo regenera contra la base antes de subirlo. Es la única
+# diferencia con desplegar una carpeta estática cualquiera.
+#
+# Lo que se publica son títulos, entradillas y metadatos de dos portales de
+# comunicación institucional públicos, que conservan su carácter público. No se
+# publica ninguna credencial: `DATABASE_URL` solo existe dentro del runner y lo
+# que sale de él es un fichero de datos ya cocinado.
+#
+# CUÁNDO SE PUBLICA
+#
+# Después de cada extracción que termine bien, que es unas once veces al día
+# entre semana. Un despliegue tarda un par de minutos y en un repositorio
+# público no consume cuota, así que no compensa acumular: si la herramienta
+# sirve para vigilar actividad reciente, la página tiene que ir al día.
+#
+# `cancel-in-progress: true` es deliberado, y aquí sí conviene: si entran dos
+# extracciones seguidas, publicar la penúltima no aporta nada. Es lo contrario
+# de lo que hace el workflow de extracción, donde cancelar dejaría un UPSERT a
+# medias.
+
+name: Publicar la interfaz
+
+on:
+  workflow_run:
+    workflows: ["Extracción transparencia-gobcan"]
+    types: [completed]
+  push:
+    branches: [main]
+    # Solo lo que cambia lo que se ve o lo que se vuelca. Un cambio en el
+    # extractor no necesita republicar: ya lo hará la siguiente extracción.
+    paths:
+      - "visualizacion/**"
+      - "config/etiquetas_tematicas.yaml"
+      - "config/areas.yaml"
+      - "src/transparencia_gobcan/carga/exportar.py"
+      - "src/transparencia_gobcan/transformacion/etiquetas.py"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    # En un `workflow_run` el disparador salta también cuando la extracción ha
+    # fallado. Publicar entonces no rompe nada —la base sigue teniendo lo de
+    # antes— pero gasta un despliegue para no cambiar nada.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.desplegar.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -e .
+
+      - name: Comprobar la configuración antes de publicar nada
+        # Un vocabulario con un patrón roto no rompe el despliegue: deja la
+        # página en pie con un filtro que no encuentra nada, que es peor porque
+        # no avisa. Se comprueba antes de tocar la base.
+        run: transparencia validar-config
+
+      - name: Regenerar el volcado que consume la interfaz
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: transparencia exportar
+
+      - name: Comprobar que el volcado sirve
+        # Publicar una página que carga un `datos.js` vacío o a medias es el
+        # tipo de fallo que no da error: la página abre, el contador dice cero y
+        # nadie se entera. Se para aquí.
+        run: |
+          test -s visualizacion/datos.js || { echo "::error::El volcado está vacío"; exit 1; }
+          python - <<'PY'
+          import json, pathlib, sys
+          t = pathlib.Path("visualizacion/datos.js").read_text(encoding="utf-8")
+          d = json.loads(t[t.index("= ") + 2:].rstrip().rstrip(";"))
+          filas, campos = len(d["filas"]), d["campos"]
+          con_eti = sum(1 for f in d["filas"] if f[campos.index("etiquetas")])
+          print(f"{filas} filas · {len(d['etiquetas'])} etiquetas · cobertura {con_eti/filas:.1%}")
+          if filas < 1000:
+              sys.exit(f"Solo {filas} filas: el volcado no está completo")
+          if "etiquetas" not in campos or not d.get("etiquetas"):
+              sys.exit("El volcado no trae etiquetas temáticas: el filtro por área saldría vacío")
+          if con_eti / filas < 0.5:
+              sys.exit(f"Cobertura de etiquetas del {con_eti/filas:.1%}: el vocabulario se ha quedado atrás")
+          PY
+
+      - name: Evitar que Jekyll procese la carpeta
+        # Sin esto, Pages pasa el contenido por Jekyll, que ignora todo lo que
+        # empiece por guion bajo y añade un minuto a cada despliegue para nada.
+        run: touch visualizacion/.nojekyll
+
+      - uses: actions/configure-pages@v6
+        with:
+          # Deja Pages activado en modo «GitHub Actions» la primera vez, para
+          # que no haya que tocar los ajustes del repositorio a mano.
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: visualizacion
+
+      - name: Desplegar
+        id: desplegar
+        uses: actions/deploy-pages@v5

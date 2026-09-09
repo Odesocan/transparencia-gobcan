@@ -75,6 +75,7 @@ observatorio.
 config/                 Vocabularios y parámetros versionados (no hay constantes en el código)
   areas.yaml              Áreas, correspondencias por legislatura y grupos parlamentarios
   alertas.yaml            Capa semántica: actos, materias y entidades
+  etiquetas_tematicas.yaml  Áreas temáticas de la interfaz, que se solapan entre sí
   territorio.yaml         Las 8 islas y los 88 municipios
   fuentes.yaml            Endpoints, selectores, cadencia y condiciones de uso
 src/transparencia_gobcan/
@@ -86,7 +87,7 @@ src/transparencia_gobcan/
   cli.py                  Punto de entrada único
 migraciones/            SQL versionado del schema transp_gobcan
 tests/                  Pruebas, con fixtures capturados de las fuentes reales
-visualizacion/          Interfaz de consulta en D3
+visualizacion/          Interfaz de consulta en D3, publicada en GitHub Pages
 docs/                   Reconocimiento, puntos de rotura, vigilancia y programación
 ```
 
@@ -178,6 +179,7 @@ transparencia clasificar --recalcular                 # tras ampliar config/aler
 transparencia notificar --simular                     # genera el aviso a fichero
 transparencia notificar                               # envía el aviso por correo
 transparencia notificar --marcar-historico            # sella lo viejo sin enviar
+transparencia exportar                                # regenera el volcado de la interfaz
 ```
 
 ### Alertas por correo
@@ -211,6 +213,28 @@ pytest
 
 Los fixtures son respuestas reales capturadas de las fuentes, no datos inventados, para que
 las pruebas cubran las rarezas que las fuentes tienen de verdad.
+
+---
+
+## Interfaz de consulta
+
+La carpeta `visualizacion/` es un buscador estático sobre lo capturado: palabra
+clave, periodo, ente —consejería en el Gobierno, grupo parlamentario en el
+Parlamento— y **área temática con etiquetas que se solapan**, porque una entrada
+sobre viviendas adaptadas para personas con discapacidad tiene que salir tanto
+al filtrar por vivienda como al filtrar por discapacidad.
+
+Las áreas de la interfaz **no son las `materias` del clasificador de alertas**,
+aunque se parezcan. Las de alertas deciden qué se notifica por correo y tienen
+que ser estrechas; estas deciden cómo se recorren 16.000 entradas y tienen que
+ser anchas. Con el vocabulario de alertas, el 55% del archivo se quedaba sin
+etiquetar y el filtro por área era inservible. El vocabulario propio vive en
+`config/etiquetas_tematicas.yaml`, se aplica al exportar y cubre el 81%.
+
+Se publica sola en GitHub Pages: `.github/workflows/pages.yml` regenera el
+volcado contra la base y despliega la carpeta después de cada extracción que
+termine bien. **El sitio es público**, como el repositorio. Los detalles y las
+decisiones de diseño están en [`visualizacion/README.md`](visualizacion/README.md).
 
 ---
 
