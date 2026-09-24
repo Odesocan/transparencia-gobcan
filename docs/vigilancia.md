@@ -79,8 +79,10 @@ correspondencias a `config/areas.yaml`.
 
 ## Fallos que ya han ocurrido
 
-Se documentan aquí porque los tres tienen la misma forma —**fallan en silencio,
-sin que nada se ponga en rojo**— y porque el siguiente probablemente también.
+Se documentan aquí porque casi todos tienen la misma forma —**fallan en silencio,
+sin que nada se ponga en rojo**— y porque el siguiente probablemente también. La
+excepción es el del 11 de agosto, que sí se puso en rojo: por eso se encontró el
+mismo día y no tirando del hilo de un recuento raro semanas después.
 
 ### El aviso no se enviaba en las ejecuciones programadas
 
@@ -145,6 +147,37 @@ La prueba que lo resuelve —preguntarle al token qué repositorios ve— está 
 
 **Lección**: ante un 404 de la API de GitHub, no deducir la causa. Preguntar al
 token qué alcanza y comparar con lo esperado.
+
+### Un `200 OK` con el cuerpo vacío tumbó la extracción entera
+
+*11 de agosto de 2026. El primero que sí se puso en rojo.*
+
+La primera petición de la ejecución —la página 1 de categorías— devolvió `200 OK` con el
+cuerpo vacío. `.json()` lanzó `JSONDecodeError: Expecting value: line 1 column 1 (char 0)`
+y el trabajo terminó en `exit code 1` sin haber descargado una sola entrada. Repetida a
+mano la misma petición minutos después, las 168 categorías estaban ahí: un tropiezo
+pasajero del Apache con PHP que hay detrás del portal.
+
+**El fallo no fue el tropiezo, fue dónde se interpretaba la respuesta.** `_pedir` ya tenía
+reintentos con espera progresiva, pero devolvía la respuesta en crudo y quien llamaba hacía
+`.json()` fuera. Es decir: el único modo de fallo que los reintentos no cubrían era justo
+el que ocurrió. Y el mensaje —`line 1 column 1`— no decía ni qué código, ni qué
+`Content-Type`, ni cuántos bytes habían llegado.
+
+Lo que se cambió:
+
+- El JSON se lee **dentro** de `_pedir`, en el alcance del reintento, y un cuerpo ilegible
+  es ahora un `RespuestaIlegible` reintentable.
+- El error dice qué llegó de verdad: código, `Content-Type`, tamaño y principio del cuerpo.
+- Se distingue la **lista vacía** —final legítimo de la paginación— del **cuerpo vacío**,
+  que antes eran indistinguibles aguas abajo.
+- Un catálogo de categorías vacío deja de pasar por bueno: son 168 y no pueden
+  desaparecer. Antes habría seguido adelante dejando todo en `sin_asignar`.
+- Cada reintento se registra en el log. Sin eso, un fallo que se recupera solo no deja
+  rastro y no se puede saber si la fuente se está degradando.
+
+**Lección**: el reintento tiene que envolver la **interpretación** de la respuesta, no solo
+su transporte. Un `200` no garantiza que el cuerpo sirva.
 
 ### El extractor de Parcan se comía 50 minutos en cada ejecución manual
 
