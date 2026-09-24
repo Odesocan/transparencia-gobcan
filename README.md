@@ -19,6 +19,12 @@ por correo.
 **Almacena** título, entradilla de dos o tres líneas, metadatos y enlace.
 **No almacena** el cuerpo completo de la noticia.
 
+Lo capturado se consulta en la **interfaz de consulta**:
+<https://odesocan.github.io/transparencia-gobcan/>. Es un buscador facetado —por
+fuente, fecha, área, grupo, tipo, situación, isla, materia y decisiones— que se
+republica tras cada extracción. Cómo funciona y por qué está hecha así, en
+[`visualizacion/README.md`](visualizacion/README.md).
+
 > Una precisión que conviene tener presente al leer los datos: las dos fuentes son portales
 > de **comunicación institucional**, no portales de transparencia. Publican lo que cada
 > gabinete decide contar, con el enfoque con que decide contarlo. La herramienta detecta
@@ -86,7 +92,7 @@ src/transparencia_gobcan/
   cli.py                  Punto de entrada único
 migraciones/            SQL versionado del schema transp_gobcan
 tests/                  Pruebas, con fixtures capturados de las fuentes reales
-visualizacion/          Interfaz de consulta en D3
+visualizacion/          Interfaz de consulta en React + D3, publicada en GitHub Pages
 docs/                   Reconocimiento, puntos de rotura, vigilancia y programación
 ```
 
