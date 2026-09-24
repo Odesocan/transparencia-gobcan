@@ -1,22 +1,50 @@
 # Interfaz de consulta
 
 Buscador sobre las publicaciones capturadas del Gobierno y el Parlamento de
-Canarias. Cubre el caso de uso 2 de la guía metodológica: búsqueda por fecha y
+Canarias. Cubre el caso de uso 2 de la guía metodológica —búsqueda por fecha y
 palabra clave, resultados paginados de diez en diez, conmutador entre Gobierno y
-Parlamento, y filtro por área en el primero y por grupo parlamentario en el
-segundo.
+Parlamento— y lo amplía a una navegación facetada por todo lo que genera el
+pipeline:
 
-## Cómo se abre
+| Filtro | Gobierno | Parlamento |
+|---|---|---|
+| Palabra clave (todas las palabras, sin tildes) | ✓ | ✓ |
+| Rango de fechas, o un mes con clic en el gráfico 1 | ✓ | ✓ |
+| Solo decisiones (capa de alertas) | ✓ | ✓ |
+| Área · consejería | ✓ | ✓ (por comisión) |
+| Materia de derechos sociales | ✓ | ✓ |
+| Isla y municipio | ✓ | ✓ |
+| Grupo proponente | | ✓ |
+| Tipo de iniciativa | | ✓ |
+| Situación de la tramitación | | ✓ |
 
-Basta con abrir `index.html` en el navegador. No hace falta servidor ni conexión:
-los tres ficheros van juntos y se leen desde disco.
+Cada opción muestra cuántas publicaciones quedarían al marcarla. El gráfico 2
+reparte el resultado por área, grupo, materia o isla, y un clic en una barra
+filtra por ella. Desde cada tarjeta se puede filtrar también por su área, su
+grupo, su territorio, su tipo o sus materias.
+
+El estado de los filtros vive en la URL (`#f=1&mat=vivienda&isla=Lanzarote`),
+así que cualquier vista se comparte con su enlace. El resultado filtrado
+completo se descarga en CSV.
+
+## Dónde se ve
+
+**En la web**, en GitHub Pages: <https://odesocan.github.io/transparencia-gobcan/>.
+Se republica sola tras cada extracción correcta (ver más abajo).
+
+**En local**, basta con abrir `index.html` en el navegador. No hace falta
+servidor ni conexión: los ficheros van juntos y se leen desde disco.
 
 ```
-index.html      la interfaz
-datos.js        el volcado, que regenera `transparencia exportar`
-d3.v7.min.js    D3 servido en local, sin CDN
-fuentes.css     las tipografías, también en local
-fuentes/        los .woff2 de Space Grotesk e Inter
+index.html                la página: cabecera, tema y carga de scripts
+app.js                    la aplicación en React, con los gráficos en D3
+estilos.css               identidad ODESOCAN y modo oscuro, en variables CSS
+datos.js                  el volcado, que regenera `transparencia exportar`
+d3.v7.min.js              D3, servido en local, sin CDN
+react-18.3.1.min.js       React (UMD), en local
+react-dom-18.3.1.min.js   ReactDOM (UMD), en local
+htm-3.1.1.min.js          plantillas tipo JSX sin compilación
+fuentes.css, fuentes/     Space Grotesk e Inter, en local
 ```
 
 Nada sale a internet, y eso importa por dos motivos distintos.
@@ -33,6 +61,19 @@ en vez de un `.json` que haya que ir a buscar: los `<script src>` no están
 sujetos a esa restricción. Por HTTP funciona exactamente igual, así que no hay
 que mantener dos versiones.
 
+## Por qué React sin compilación
+
+React gobierna el estado y el DOM; D3 dibuja los dos gráficos dentro de un
+contenedor que React le cede, así que ninguno pisa al otro.
+
+No hay Vite ni Babel porque la página se tiene que poder abrir con doble clic, y
+**Chrome bloquea los módulos ES desde `file://`** igual que bloquea `fetch()`.
+Un build con `<script type="module">` rompería justo el uso principal. Por eso
+React va en su versión UMD, que declara variables globales, y las plantillas se
+escriben con [htm](https://github.com/developit/htm), que da una sintaxis casi
+idéntica a JSX interpretada en el navegador (1 kB). Se queda en React 18 porque
+React 19 ya no publica la versión UMD.
+
 ## Por qué lee un fichero y no la base
 
 La alternativa era que el navegador hablase directamente con Supabase, lo que
@@ -48,26 +89,73 @@ transparencia exportar
 ```
 
 `datos.js` **no está en el repositorio**: son 8 MB que cambian en cada ejecución
-y lo engordarían muy rápido. Hay dos formas de conseguirlo:
+y lo engordarían muy rápido. Hay tres formas de conseguirlo:
 
 - **En local**, ejecutando el comando de arriba con las credenciales en `.env`.
 - **Desde GitHub**, descargando el artefacto `datos-interfaz` de la última
   ejecución en la pestaña Actions. Se conserva catorce días y no hace falta
   tener acceso a la base.
+- **Desde la web**: <https://odesocan.github.io/transparencia-gobcan/datos.js>.
 
-Si algún día la interfaz vive en la web, lo suyo sería que el workflow subiese
-`datos.js` a donde la página lo lea —Supabase Storage o la carpeta de medios de
-WordPress— en vez de dejarlo como artefacto.
+Además del contenido, el volcado lleva lo que la interfaz necesita para
+presentarlo: los nombres de las áreas y de los tipos de iniciativa, el mapa de
+cada municipio a su isla y la hora de generación. Todo sale de `config/` y del
+código del pipeline, así que no hay una segunda copia en la interfaz que pueda
+desincronizarse.
 
 Pesa unos 8 MB porque lleva las 16.000 entradas con su entradilla. El formato es
 columnar —una lista de campos y filas como arrays, con catálogos para las áreas,
 los grupos y los territorios— lo que lo deja en la mitad de lo que ocuparía como
 lista de objetos. Servido con compresión son unos 2 MB.
 
+La página pide `datos.js` después de pintar la cabecera, no con un `<script>`
+fijo en el HTML: mientras llegan los 2 MB se ve un indicador de carga en vez de
+una pantalla en blanco.
+
 Si algún día crece mucho, lo siguiente sería partirlo por año y cargar bajo
 demanda. Hoy no hace falta.
 
+## Publicación en GitHub Pages
+
+La publica `.github/workflows/pages.yml`, que regenera el volcado desde la base
+y sube la carpeta con él dentro. El volcado nunca pasa por git. Se ejecuta:
+
+- al terminar **bien** cada extracción, así que la web va como mucho una hora
+  y media por detrás de la base en horario de oficina;
+- al cambiar la interfaz o el exportador en `main`;
+- a mano, desde la pestaña Actions.
+
+**Activación, una sola vez**: Settings → Pages → Build and deployment →
+Source: **GitHub Actions**. El `GITHUB_TOKEN` del workflow no tiene permiso
+para activarlo por sí mismo, y sin ese paso el despliegue falla con un 404.
+
+Conviene tener presente que **Pages es público**: cualquiera con el enlace ve la
+interfaz y puede descargar `datos.js`. No expone nada que no lo esté ya —título,
+entradilla y enlace de publicaciones institucionales públicas, más nuestras
+clasificaciones—, pero deja de ser una herramienta solo interna.
+
 ## Decisiones de diseño que no son evidentes
+
+**Los recuentos de cada filtro excluyen su propio filtro.** Es la convención de
+la búsqueda facetada: al marcar «Sanidad» se siguen viendo las demás áreas con
+su cifra, y se puede añadir otra. Las fechas se tratan igual, así que al elegir
+un mes el gráfico 1 sigue mostrando los demás, apagados, y se puede saltar de
+uno a otro. Se calcula todo en una sola pasada: una fila que solo falla en una
+faceta suma únicamente para esa.
+
+**Los filtros usan claves estables, no índices.** El volcado sustituye áreas y
+tipos por su índice en un catálogo, pero ese índice cambia en cada volcado. La
+URL guarda la clave (`obras_publicas`, `PNLP`), de modo que un enlace compartido
+sigue funcionando al día siguiente.
+
+**Las iniciativas conjuntas cuentan para cada grupo.** El Parlamento publica las
+firmadas por varios grupos como una sola cadena; se separan al cargar, y filtrar
+por un grupo incluye también lo que firmó con otros.
+
+**El territorio se agrupa por isla.** El campo mezcla niveles —«Canarias», una
+isla o un municipio—, así que filtrar por «Tenerife» a secas dejaría fuera lo de
+La Orotava. El gráfico por isla no incluye lo autonómico: es más de la mitad de
+todo y aplastaría la escala del resto; la nota al pie da la cifra.
 
 **El gráfico se recalcula sobre el resultado filtrado.** No es un adorno: el
 Gobierno publica unas veintitrés veces más que el Parlamento, y en un eje
@@ -108,12 +196,16 @@ que el Parlamento y, juntos en un mismo eje, la serie del Parlamento quedaba en
 una franja de un píxel. Con una sola fuente activa el gráfico tiene una serie,
 el eje se ajusta a ella y la leyenda sobra, porque el título nombra la fuente.
 
-## Empotrarlo en la web
+## Empotrarlo en la web de ODESOCAN
 
-Para llevarlo a un bloque de código de Divi hay que servir `datos.json` y
-`d3.v7.min.js` desde una URL accesible —por ejemplo la carpeta de medios de
-WordPress— y ajustar las dos rutas del final de `index.html`. El resto del
-fichero se pega tal cual dentro del bloque.
+Lo más sencillo es un `<iframe>` que apunte a la versión de GitHub Pages: se
+actualiza sola y no hay que copiar nada a WordPress.
 
-Conviene comprobar antes que el servidor entrega el JSON con compresión: sin
-ella son 8 MB por visita.
+```html
+<iframe src="https://odesocan.github.io/transparencia-gobcan/"
+        style="width:100%;height:1400px;border:0" loading="lazy"
+        title="Actividad ejecutiva y parlamentaria de Canarias"></iframe>
+```
+
+GitHub Pages ya entrega `datos.js` comprimido: unos 2 MB por visita en lugar
+de 8.

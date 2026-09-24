@@ -1,0 +1,93 @@
+# Publica la interfaz de consulta en GitHub Pages.
+#
+# `datos.js` no está en el repositorio (8 MB que cambian en cada ejecución), así
+# que no basta con servir la carpeta `visualizacion/` tal cual: el sitio saldría
+# sin datos. Este workflow regenera el volcado desde la base y publica la
+# carpeta con él dentro. El volcado nunca pasa por git.
+#
+# Se dispara en tres casos:
+#   - al terminar bien una extracción, para que la web refleje lo recién cargado;
+#   - al cambiar la interfaz o el exportador en main;
+#   - a mano, desde la pestaña Actions.
+#
+# ANTES DE LA PRIMERA EJECUCIÓN hay que activar Pages con origen «GitHub
+# Actions» (Settings → Pages → Build and deployment → Source). Sin eso el paso
+# de despliegue falla con un 404. El GITHUB_TOKEN no tiene permiso para
+# activarlo por sí mismo.
+
+name: Publicar interfaz en GitHub Pages
+
+on:
+  workflow_run:
+    workflows: ["Extracción transparencia-gobcan"]
+    types: [completed]
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - "visualizacion/**"
+      - "src/transparencia_gobcan/carga/exportar.py"
+      - "config/areas.yaml"
+      - "config/territorio.yaml"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  # Un despliegue en curso no se cancela a medias: el siguiente espera y
+  # publica encima con datos más frescos.
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  construir:
+    # Una extracción fallida no debe publicar un volcado a medio cargar
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -e .
+
+      - name: Regenerar el volcado
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: transparencia exportar --destino _sitio/datos.js
+
+      # Solo lo que la página necesita: el README de la carpeta es para el
+      # equipo, no para la web.
+      - name: Montar el sitio
+        run: |
+          cp visualizacion/index.html visualizacion/app.js visualizacion/estilos.css \
+             visualizacion/fuentes.css visualizacion/*.min.js _sitio/
+          cp -r visualizacion/fuentes _sitio/
+          # Sin Jekyll: el sitio es estático tal cual y así no ignora nada
+          touch _sitio/.nojekyll
+          ls -la _sitio
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _sitio
+
+  desplegar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - id: despliegue
+        uses: actions/deploy-pages@v5
