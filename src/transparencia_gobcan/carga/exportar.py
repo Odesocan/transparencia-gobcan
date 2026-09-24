@@ -25,6 +25,7 @@ from __future__ import annotations
 import json
 import logging
 import pathlib
+from datetime import UTC, datetime
 from typing import Any
 
 from ..config import entorno
@@ -37,6 +38,24 @@ CAMPOS = [
     "fecha", "fuente", "titulo", "entrada", "url",
     "area", "territorio", "grupo", "tipo", "situacion", "alerta", "materias",
 ]
+
+
+def isla_de_territorio(cfg: dict[str, Any]) -> dict[str, str]:
+    """Isla a la que pertenece cada territorio, para agruparlos en la interfaz.
+
+    El campo `territorio` mezcla niveles —«Canarias», una isla o un municipio—,
+    así que filtrar por «Tenerife» a secas dejaría fuera lo de La Orotava. Con
+    este mapa la interfaz filtra por isla y, dentro de ella, por municipio.
+
+    La Graciosa se resuelve como isla propia aunque pertenezca a Teguise: es
+    como la trata la derivación de territorio, y así se ve en la interfaz.
+    """
+    mapa: dict[str, str] = {}
+    for isla in cfg["islas"]:
+        mapa[isla["nombre"]] = isla["nombre"]
+        for municipio in isla.get("municipios") or []:
+            mapa[municipio] = isla["nombre"]
+    return mapa
 
 
 def exportar(destino: pathlib.Path) -> dict[str, Any]:
@@ -95,14 +114,18 @@ def exportar(destino: pathlib.Path) -> dict[str, Any]:
 
     from .. import __version__
     from ..config import cargar
+    from ..transformacion.iniciativas import NOMBRE_TIPO
 
     nombres_area = {a["clave"]: a["nombre"] for a in cargar("areas")["areas"]}
 
     datos = {
         "version": __version__,
+        "generado": datetime.now(UTC).isoformat(timespec="minutes"),
         "campos": CAMPOS,
         "catalogos": catalogos,
         "nombres_area": nombres_area,
+        "nombres_tipo": NOMBRE_TIPO,
+        "isla_de": isla_de_territorio(cargar("territorio")),
         "actividad": [{"mes": m, "gobierno": v[0], "parlamento": v[1]}
                       for m, v in sorted(meses.items())],
         "filas": filas,
