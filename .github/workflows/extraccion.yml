@@ -149,8 +149,15 @@ jobs:
     # Solo en el cierre diario, o cuando se pida a propósito. Antes bastaba
     # con lanzar el workflow a mano para que se comiera 50 minutos y 690
     # peticiones al Parlamento, aunque solo se quisiera probar el Gobierno.
+    #
+    # OJO: esta condición compara con la expresión cron LITERAL del cierre
+    # diario, así que hay que cambiarla a la vez que el cron de arriba. Si se
+    # desincroniza, el Parlamento deja de recorrerse sin que falle nada: el
+    # run sale verde todas las noches y el anillo de decisiones se queda sin
+    # actualizar. Se cambió de '0 21 * * *' a '0 22 * * *' con el paso al
+    # horario de invierno del 25-10-2026.
     if: >-
-      github.event.schedule == '0 21 * * *' ||
+      github.event.schedule == '0 22 * * *' ||
       (github.event_name == 'workflow_dispatch' && inputs.parlamento)
     steps:
       - uses: actions/checkout@v7
