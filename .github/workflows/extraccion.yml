@@ -10,8 +10,8 @@
 # las entradas aparece entre las 09:00 y las 15:00 hora canaria, con el máximo
 # a las 13:00. Fuera de esa franja, casi ninguna ejecución encuentra nada.
 #
-# NOTA: las expresiones cron de GitHub Actions van en UTC. Canarias es UTC+1 en
-# horario de verano, así que la franja 08:00-20:00 local se expresa como 07-19.
+# NOTA: las expresiones cron de GitHub Actions van en UTC. Canarias es UTC+0 en
+# horario de invierno, así que la hora UTC y la hora local coinciden.
 
 name: Extracción transparencia-gobcan
 
@@ -35,11 +35,15 @@ on:
     # OJO CON EL CAMBIO DE HORA: el cron va siempre en UTC y no se ajusta solo.
     # Canarias está en UTC+1 de finales de marzo a finales de octubre, y en
     # UTC+0 el resto del año. Las horas de abajo están calculadas para el
-    # horario de VERANO; en octubre habrá que sumar una hora a cada expresión
-    # o las ejecuciones se adelantarán. Anotado en docs/vigilancia.md.
-    - cron: "13,43 8 * * 1-5"   # 9:13 y 9:43 hora canaria (verano)
-    - cron: "13 9-19 * * 1-5"   # cada hora, hasta las 20:13 canaria
-    - cron: "0 21 * * *"        # cierre diario a las 22:00 canaria
+    # horario de INVIERNO, vigente desde el 25 de octubre de 2026; en marzo
+    # habrá que RESTAR una hora a cada expresión o las ejecuciones se
+    # retrasarán. Anotado en docs/vigilancia.md.
+    #
+    # Histórico: hasta el 25-10-2026 estas tres expresiones eran "13,43 8",
+    # "13 9-19" y "0 21", calculadas para el horario de verano.
+    - cron: "13,43 9 * * 1-5"   # 9:13 y 9:43 hora canaria (invierno)
+    - cron: "13 10-20 * * 1-5"  # cada hora, hasta las 20:13 canaria
+    - cron: "0 22 * * *"        # cierre diario a las 22:00 canaria
   workflow_dispatch:              # ejecución manual desde la interfaz de GitHub
     inputs:
       modo:
