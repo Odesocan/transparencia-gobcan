@@ -18,7 +18,7 @@ from datetime import datetime
 from typing import Any
 
 import httpx
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+from tenacity import RetryCallState, retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from ..config import cargar
 
@@ -31,6 +31,23 @@ AGENTE = (
     "(+https://odesocan.org; investigacion@odesocan.org)"
 )
 PAUSA_ENTRE_PAGINAS_S = 0.3
+
+# Cuánto cuerpo se enseña en el mensaje de error. Suficiente para reconocer una
+# página de mantenimiento o un aviso de PHP, sin volcar 200 KB al log de Actions.
+MUESTRA_CUERPO = 200
+
+
+class RespuestaIlegible(Exception):
+    """Un `200 OK` cuyo cuerpo no es la lista JSON que la API promete.
+
+    Ocurrido el 11/08/2026: la primera petición de categorías devolvió 200 con
+    el cuerpo vacío y la ejecución entera se cayó con un `JSONDecodeError` a
+    secas, sin reintentar y sin decir qué había respondido la fuente.
+
+    Tiene clase propia por las dos cosas: para que el reintento la cubra —un
+    cuerpo vacío con código 200 es un tropiezo pasajero del servidor, no un
+    dato— y para que el mensaje diga qué llegó de verdad.
+    """
 
 
 def _cfg() -> dict:
@@ -46,23 +63,75 @@ def _cliente() -> httpx.Client:
     )
 
 
+def _leer_lista(respuesta: httpx.Response) -> list[dict[str, Any]]:
+    """Convierte la respuesta en la lista de registros, o explica por qué no puede.
+
+    La API siempre devuelve una lista en el camino feliz. Cualquier otra cosa
+    con código 200 —cuerpo vacío, HTML de una página de error, un objeto de
+    error de WordPress— es una respuesta que no sirve, y conviene distinguirla
+    de la lista vacía legítima que marca el final de la paginación.
+    """
+    try:
+        datos = respuesta.json()
+    except ValueError as e:
+        cuerpo = respuesta.text
+        detalle = (
+            "cuerpo vacío" if not cuerpo.strip()
+            else f"empieza por {cuerpo[:MUESTRA_CUERPO]!r}"
+        )
+        raise RespuestaIlegible(
+            f"{respuesta.status_code} en {respuesta.url} con "
+            f"Content-Type {respuesta.headers.get('content-type', '(ninguno)')!r} "
+            f"y {len(respuesta.content)} bytes: {detalle}"
+        ) from e
+
+    if not isinstance(datos, list):
+        raise RespuestaIlegible(
+            f"{respuesta.status_code} en {respuesta.url}: se esperaba una lista y "
+            f"ha llegado {type(datos).__name__}: {str(datos)[:MUESTRA_CUERPO]}"
+        )
+    return datos
+
+
+def _avisar_reintento(estado: RetryCallState) -> None:
+    """Deja constancia de cada reintento: si no, un fallo pasajero es invisible."""
+    error = estado.outcome.exception() if estado.outcome else None
+    log.warning(
+        "La fuente ha fallado (intento %d): %s: %s. Reintentando en %.0f s",
+        estado.attempt_number,
+        type(error).__name__,
+        error,
+        estado.next_action.sleep if estado.next_action else 0,
+    )
+
+
 @retry(
-    retry=retry_if_exception_type((httpx.TransportError, httpx.HTTPStatusError)),
+    retry=retry_if_exception_type(
+        (httpx.TransportError, httpx.HTTPStatusError, RespuestaIlegible)
+    ),
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=5, min=5, max=30),
+    before_sleep=_avisar_reintento,
     reraise=True,
 )
-def _pedir(cliente: httpx.Client, url: str, parametros: dict) -> httpx.Response:
-    """Lanza una petición con reintentos y espera progresiva.
+def _pedir(cliente: httpx.Client, url: str, parametros: dict) -> tuple[httpx.Response, list | None]:
+    """Lanza una petición con reintentos y devuelve la respuesta ya interpretada.
+
+    El JSON se lee aquí dentro a propósito. Hacerlo fuera dejaba el `.json()`
+    fuera del alcance del reintento: un `200` con el cuerpo vacío —que pasa, y
+    ha pasado— tumbaba la ejecución entera en la primera petición en lugar de
+    reintentarse como el fallo pasajero que es.
 
     Pasarse de la última página devuelve 400 o 404: es la condición de parada
-    normal de la paginación, no un error, así que no se reintenta.
+    normal de la paginación, no un error, así que no se reintenta ni se lee el
+    cuerpo. Se devuelve `None` para que quien llama lo distinga de una página
+    legítimamente vacía.
     """
     respuesta = cliente.get(url, params=parametros)
     if respuesta.status_code in (400, 404):
-        return respuesta
+        return respuesta, None
     respuesta.raise_for_status()
-    return respuesta
+    return respuesta, _leer_lista(respuesta)
 
 
 def descargar_categorias() -> dict[int, dict[str, Any]]:
@@ -78,14 +147,11 @@ def descargar_categorias() -> dict[int, dict[str, Any]]:
     with _cliente() as cliente:
         pagina = 1
         while True:
-            respuesta = _pedir(
+            _, datos = _pedir(
                 cliente,
                 api["endpoint_categorias"],
                 {"per_page": 100, "page": pagina, "_fields": "id,name,slug,parent,count"},
             )
-            if respuesta.status_code in (400, 404):
-                break
-            datos = respuesta.json()
             if not datos:
                 break
             catalogo.update(
@@ -95,6 +161,18 @@ def descargar_categorias() -> dict[int, dict[str, Any]]:
                 break
             pagina += 1
             time.sleep(PAUSA_ENTRE_PAGINAS_S)
+
+    # Sin catálogo no se puede asignar área ni detectar categorías nuevas: la
+    # extracción seguiría adelante y dejaría todo en `sin_asignar` sin que nada
+    # se pusiera en rojo. Mejor parar; la siguiente ejecución reintenta y el
+    # UPSERT es idempotente, así que no se pierde nada.
+    if not catalogo:
+        raise RespuestaIlegible(
+            "La fuente ha devuelto un catálogo de categorías vacío. Son 168 y no "
+            "pueden desaparecer: revisa si la API REST sigue abierta "
+            "(ver docs/puntos-de-rotura.md, 1.1)."
+        )
+
     log.info("Categorías descargadas: %d", len(catalogo))
     return catalogo
 
@@ -136,11 +214,7 @@ def descargar_entradas(
     with _cliente() as cliente:
         pagina, total_declarado = 1, None
         while True:
-            respuesta = _pedir(cliente, api["endpoint_posts"], {**parametros, "page": pagina})
-            if respuesta.status_code in (400, 404):
-                break
-
-            datos = respuesta.json()
+            respuesta, datos = _pedir(cliente, api["endpoint_posts"], {**parametros, "page": pagina})
             if not datos:
                 break
 
